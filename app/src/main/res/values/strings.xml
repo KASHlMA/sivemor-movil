@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Sivemore</string>
+    <string name="auth_title">Welcome back</string>
+    <string name="auth_subtitle">A focused daily workspace for routines, priorities, and momentum.</string>
+    <string name="auth_email_label">Email address</string>
+    <string name="auth_password_label">Password</string>
+    <string name="auth_primary_cta">Continue</string>
+    <string name="auth_guest_cta">Continue as guest</string>
+    <string name="auth_helper">Use any non-empty credentials to open the mocked flow.</string>
+    <string name="home_route">Home</string>
+    <string name="profile_route">Profile</string>
+    <string name="profile_edit_cta">Edit profile</string>
+    <string name="profile_logout_cta">Sign out</string>
+    <string name="home_empty_message">No dashboard content has been mapped yet.</string>
+    <string name="profile_empty_message">Profile details are waiting for the backend contract.</string>
+</resources>
