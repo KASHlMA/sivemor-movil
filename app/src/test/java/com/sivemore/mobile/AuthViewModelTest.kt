@@ -11,6 +11,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -34,7 +35,7 @@ class AuthViewModelTest {
         advanceUntilIdle()
 
         assertEquals(
-            "Enter an email and password to continue.",
+            "Ingresa correo y contraseña para continuar.",
             viewModel.uiState.value.errorMessage,
         )
     }
@@ -63,6 +64,7 @@ class AuthViewModelTest {
         viewModel.onAction(AuthUiAction.EmailChanged("team@sivemore.app"))
         viewModel.onAction(AuthUiAction.PasswordChanged("secret"))
         viewModel.onAction(AuthUiAction.Submit)
+        runCurrent()
 
         assertTrue(viewModel.uiState.value.isLoading)
 
@@ -93,8 +95,8 @@ class AuthViewModelTest {
     companion object {
         private val SAMPLE_USER = AuthenticatedUser(
             id = "1",
-            displayName = "Sofia Benitez",
-            email = "team@sivemore.app",
+            displayName = "Mariana Ortiz",
+            email = "team@sivemor.mx",
         )
     }
 }

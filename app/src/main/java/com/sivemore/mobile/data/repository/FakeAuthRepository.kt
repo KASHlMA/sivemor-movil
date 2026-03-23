@@ -19,8 +19,8 @@ class FakeAuthRepository @Inject constructor() : AuthRepository {
     override suspend fun continueAsGuest(): AuthenticatedUser {
         return FakeCatalog.user.copy(
             id = "guest",
-            displayName = "Guest explorer",
-            email = "guest@sivemore.app",
+            displayName = "Invitado",
+            email = "guest@sivemor.mx",
         )
     }
 }

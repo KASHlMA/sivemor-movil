@@ -1,16 +1,20 @@
 <resources>
     <string name="app_name">Sivemore</string>
-    <string name="auth_title">Welcome back</string>
-    <string name="auth_subtitle">A focused daily workspace for routines, priorities, and momentum.</string>
-    <string name="auth_email_label">Email address</string>
-    <string name="auth_password_label">Password</string>
-    <string name="auth_primary_cta">Continue</string>
-    <string name="auth_guest_cta">Continue as guest</string>
-    <string name="auth_helper">Use any non-empty credentials to open the mocked flow.</string>
-    <string name="home_route">Home</string>
-    <string name="profile_route">Profile</string>
-    <string name="profile_edit_cta">Edit profile</string>
-    <string name="profile_logout_cta">Sign out</string>
-    <string name="home_empty_message">No dashboard content has been mapped yet.</string>
-    <string name="profile_empty_message">Profile details are waiting for the backend contract.</string>
+    <string name="auth_title">Iniciar sesión</string>
+    <string name="auth_subtitle">Sistema de Verificación de Morelos</string>
+    <string name="auth_email_label">Correo electrónico</string>
+    <string name="auth_password_label">Contraseña</string>
+    <string name="auth_primary_cta">Iniciar sesión</string>
+    <string name="auth_helper">Ingresa cualquier correo y contraseña para abrir el flujo local.</string>
+    <string name="vehicle_search_label">Búsqueda de vehículo</string>
+    <string name="vehicle_search_hint">Placas, VIN o número de vehículo</string>
+    <string name="vehicle_search_action">Buscar</string>
+    <string name="pending_dialog_title">Tiene una evaluación pendiente</string>
+    <string name="pending_dialog_message">¿Quiere concluirla?</string>
+    <string name="pending_dialog_continue">Continuar</string>
+    <string name="pending_dialog_cancel">Cancelar</string>
+    <string name="evidence_dialog_title">Agregar evidencia</string>
+    <string name="evidence_dialog_camera">Tomar foto</string>
+    <string name="evidence_dialog_gallery">Seleccionar evidencia</string>
+    <string name="dialog_cancel">Cancelar</string>
 </resources>

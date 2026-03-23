@@ -45,7 +45,7 @@ class AuthViewModel @Inject constructor(
         val state = uiState.value
         if (!state.isSubmitEnabled) {
             _uiState.update {
-                it.copy(errorMessage = "Enter an email and password to continue.")
+                it.copy(errorMessage = "Ingresa correo y contraseña para continuar.")
             }
             return
         }
@@ -64,7 +64,7 @@ class AuthViewModel @Inject constructor(
                 _uiState.update { current ->
                     current.copy(
                         isLoading = false,
-                        errorMessage = it.message ?: "We could not sign you in.",
+                        errorMessage = it.message ?: "No fue posible iniciar sesión.",
                     )
                 }
             }
@@ -80,4 +80,3 @@ class AuthViewModel @Inject constructor(
         }
     }
 }
-

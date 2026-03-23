@@ -1,16 +1,17 @@
 package com.sivemore.mobile
 
-import androidx.activity.ComponentActivity
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onRoot
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.sivemore.mobile.app.designsystem.SivemoreTheme
 import com.sivemore.mobile.data.fixtures.FakeCatalog
-import com.sivemore.mobile.feature.home.HomeScreen
-import com.sivemore.mobile.feature.home.HomeUiState
-import com.sivemore.mobile.feature.profile.ProfileScreen
-import com.sivemore.mobile.feature.profile.ProfileUiState
+import com.sivemore.mobile.feature.auth.AuthScreen
+import com.sivemore.mobile.feature.auth.AuthUiState
+import com.sivemore.mobile.feature.sessionactions.SessionActionsScreen
+import com.sivemore.mobile.feature.sessionactions.SessionActionsUiState
+import com.sivemore.mobile.feature.vehiclelookup.VehicleLookupScreen
+import com.sivemore.mobile.feature.vehiclelookup.VehicleLookupUiState
+import com.sivemore.mobile.feature.verification.VerificationScreen
+import com.sivemore.mobile.feature.verification.VerificationUiState
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -20,43 +21,91 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class ScreenshotRegressionTest {
 
-    @get:Rule
-    val composeRule = createAndroidComposeRule<ComponentActivity>()
-
     @Test
-    fun captureHomeLoadedState() {
-        composeRule.setContent {
+    fun captureAuthScreen() {
+        captureRoboImage(filePath = "build/roborazzi/auth.png") {
             SivemoreTheme {
-                HomeScreen(
-                    state = HomeUiState(
-                        isLoading = false,
-                        overview = FakeCatalog.overview,
-                    ),
+                AuthScreen(
+                    state = AuthUiState(email = "inspector@sivemor.mx", password = "secret"),
                     onAction = {},
                 )
             }
         }
-
-        composeRule.waitForIdle()
-        composeRule.onRoot().captureRoboImage()
     }
 
     @Test
-    fun captureProfileLoadedState() {
-        composeRule.setContent {
+    fun captureLoadingScreen() {
+        captureRoboImage(filePath = "build/roborazzi/loading.png") {
             SivemoreTheme {
-                ProfileScreen(
-                    state = ProfileUiState(
+                AuthScreen(
+                    state = AuthUiState(isLoading = true),
+                    onAction = {},
+                )
+            }
+        }
+    }
+
+    @Test
+    fun captureVehicleLookupAndPendingDialog() {
+        captureRoboImage(filePath = "build/roborazzi/vehicle_lookup_pending.png") {
+            SivemoreTheme {
+                VehicleLookupScreen(
+                    state = VehicleLookupUiState(
                         isLoading = false,
-                        summary = FakeCatalog.profile,
+                        vehicles = FakeCatalog.defaultVehicles(),
+                        pendingVehicle = FakeCatalog.defaultVehicles().first(),
                     ),
                     onAction = {},
                 )
             }
         }
+    }
 
-        composeRule.waitForIdle()
-        composeRule.onRoot().captureRoboImage()
+    @Test
+    fun captureVerificationLightsScreen() {
+        captureRoboImage(filePath = "build/roborazzi/verification_lights.png") {
+            SivemoreTheme {
+                VerificationScreen(
+                    state = VerificationUiState(
+                        isLoading = false,
+                        session = FakeCatalog.createFreshSession("veh-002"),
+                    ),
+                    onAction = {},
+                )
+            }
+        }
+    }
+
+    @Test
+    fun captureVerificationEvidenceScreen() {
+        captureRoboImage(filePath = "build/roborazzi/verification_evidence.png") {
+            SivemoreTheme {
+                VerificationScreen(
+                    state = VerificationUiState(
+                        isLoading = false,
+                        session = FakeCatalog.createPendingSession("veh-003").copy(
+                            selectedCategory = com.sivemore.mobile.domain.model.InspectionCategory.Evidence,
+                        ),
+                    ),
+                    onAction = {},
+                )
+            }
+        }
+    }
+
+    @Test
+    fun capturePauseDialog() {
+        captureRoboImage(filePath = "build/roborazzi/session_pause_dialog.png") {
+            SivemoreTheme {
+                SessionActionsScreen(
+                    state = SessionActionsUiState(
+                        isLoading = false,
+                        vehicleLabel = "VUH-TQ8-453",
+                        showPauseDialog = true,
+                    ),
+                    onAction = {},
+                )
+            }
+        }
     }
 }
-

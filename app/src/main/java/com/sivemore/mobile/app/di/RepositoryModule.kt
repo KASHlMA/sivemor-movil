@@ -1,11 +1,11 @@
 package com.sivemore.mobile.app.di
 
 import com.sivemore.mobile.data.repository.FakeAuthRepository
-import com.sivemore.mobile.data.repository.FakeHomeRepository
-import com.sivemore.mobile.data.repository.FakeProfileRepository
+import com.sivemore.mobile.data.repository.FakeVehicleRepository
+import com.sivemore.mobile.data.repository.FakeVerificationRepository
 import com.sivemore.mobile.domain.repository.AuthRepository
-import com.sivemore.mobile.domain.repository.HomeRepository
-import com.sivemore.mobile.domain.repository.ProfileRepository
+import com.sivemore.mobile.domain.repository.VehicleRepository
+import com.sivemore.mobile.domain.repository.VerificationRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -24,13 +24,13 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
-    abstract fun bindHomeRepository(
-        implementation: FakeHomeRepository,
-    ): HomeRepository
+    abstract fun bindVehicleRepository(
+        implementation: FakeVehicleRepository,
+    ): VehicleRepository
 
     @Binds
     @Singleton
-    abstract fun bindProfileRepository(
-        implementation: FakeProfileRepository,
-    ): ProfileRepository
+    abstract fun bindVerificationRepository(
+        implementation: FakeVerificationRepository,
+    ): VerificationRepository
 }

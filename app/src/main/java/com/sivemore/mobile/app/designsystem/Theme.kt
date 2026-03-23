@@ -11,29 +11,29 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.dp
 
 private val LightColors = lightColorScheme(
-    primary = Clay,
+    primary = BrandGreen,
     onPrimary = Snow,
-    primaryContainer = RoseDust,
-    onPrimaryContainer = Ink,
-    secondary = Sage,
+    primaryContainer = BrandGreenMuted,
+    onPrimaryContainer = Snow,
+    secondary = BrandGreenDeep,
     onSecondary = Snow,
-    secondaryContainer = Mist,
+    secondaryContainer = Background,
     onSecondaryContainer = Ink,
-    tertiary = Sun,
-    onTertiary = Ink,
-    background = Shell,
+    tertiary = BrandMint,
+    onTertiary = Snow,
+    background = Background,
     onBackground = Ink,
-    surface = Snow,
+    surface = Surface,
     onSurface = Ink,
-    surfaceVariant = Mist,
-    onSurfaceVariant = Slate,
-    outline = Sand,
+    surfaceVariant = Background,
+    onSurfaceVariant = MutedText,
+    outline = Border,
 )
 
 private val SivemoreShapes = Shapes(
-    small = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-    medium = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
-    large = androidx.compose.foundation.shape.RoundedCornerShape(32.dp),
+    small = androidx.compose.foundation.shape.RoundedCornerShape(4.dp),
+    medium = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+    large = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
 )
 
 @Immutable
