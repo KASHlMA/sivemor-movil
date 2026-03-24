@@ -1,10 +1,9 @@
 package com.sivemore.mobile
 
 import androidx.lifecycle.SavedStateHandle
-import com.sivemore.mobile.data.repository.FakeVerificationRepository
-import com.sivemore.mobile.data.repository.FakeVerificationStore
-import com.sivemore.mobile.domain.model.EvidenceSource
-import com.sivemore.mobile.domain.model.InspectionCategory
+import com.sivemore.mobile.domain.model.EvidenceUpload
+import com.sivemore.mobile.domain.model.VerificationSession
+import com.sivemore.mobile.domain.repository.VerificationRepository
 import com.sivemore.mobile.feature.verification.VerificationEvent
 import com.sivemore.mobile.feature.verification.VerificationUiAction
 import com.sivemore.mobile.feature.verification.VerificationViewModel
@@ -14,72 +13,43 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class VerificationViewModelTest {
-
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private fun buildViewModel(
-        vehicleId: String = "veh-003",
-        store: FakeVerificationStore = FakeVerificationStore(),
-    ): VerificationViewModel = VerificationViewModel(
-        savedStateHandle = SavedStateHandle(mapOf("vehicleId" to vehicleId)),
-        verificationRepository = FakeVerificationRepository(store),
-    )
-
-    @Test
-    fun categorySelectionUpdatesSession() = runTest {
-        val viewModel = buildViewModel()
-        advanceUntilIdle()
-
-        viewModel.onAction(VerificationUiAction.CategorySelected(InspectionCategory.Evidence))
-        advanceUntilIdle()
-
-        assertEquals(
-            InspectionCategory.Evidence,
-            viewModel.uiState.value.session?.selectedCategory,
+    private fun buildViewModel(repository: StubVerificationRepository = StubVerificationRepository()): VerificationViewModel =
+        VerificationViewModel(
+            savedStateHandle = SavedStateHandle(mapOf("vehicleId" to "1")),
+            verificationRepository = repository,
         )
+
+    @Test
+    fun commentEditingUpdatesSession() = runTest {
+        val repository = StubVerificationRepository()
+        val viewModel = buildViewModel(repository)
+        advanceUntilIdle()
+
+        viewModel.onAction(VerificationUiAction.CommentDraftChanged("Observación general"))
+        viewModel.onAction(VerificationUiAction.CommentSaved)
+        advanceUntilIdle()
+
+        assertEquals("Observación general", viewModel.uiState.value.session?.comments)
     }
 
     @Test
-    fun optionAndNumericInputsUpdateSessionState() = runTest {
-        val viewModel = buildViewModel(vehicleId = "veh-002")
+    fun evidenceRemovalUpdatesSession() = runTest {
+        val repository = StubVerificationRepository()
+        val viewModel = buildViewModel(repository)
         advanceUntilIdle()
 
-        viewModel.onAction(VerificationUiAction.OptionToggled("tires_missing_lugs", "missing"))
-        viewModel.onAction(VerificationUiAction.NumericChanged("tires_missing_lugs", "95"))
+        viewModel.onAction(VerificationUiAction.RemoveEvidence("e1"))
         advanceUntilIdle()
 
-        val item = viewModel.uiState.value.session
-            ?.categories
-            ?.flatMap { it.sections }
-            ?.flatMap { it.items }
-            ?.first { it.id == "tires_missing_lugs" }
-
-        assertTrue(item?.selectedOptionIds?.contains("missing") == true)
-        assertEquals("95", item?.numericValue)
-    }
-
-    @Test
-    fun evidenceCanBeAddedAndRemoved() = runTest {
-        val viewModel = buildViewModel()
-        advanceUntilIdle()
-
-        viewModel.onAction(VerificationUiAction.EvidenceSourceSelected(EvidenceSource.Camera))
-        advanceUntilIdle()
-
-        val evidenceId = viewModel.uiState.value.session?.evidence?.last()?.id
-        assertTrue(viewModel.uiState.value.session?.evidence?.isNotEmpty() == true)
-
-        viewModel.onAction(VerificationUiAction.RemoveEvidence(checkNotNull(evidenceId)))
-        advanceUntilIdle()
-
-        assertTrue(viewModel.uiState.value.session?.evidence?.none { it.id == evidenceId } == true)
+        assertEquals(0, viewModel.uiState.value.session?.sections?.first()?.evidence?.size)
     }
 
     @Test
@@ -92,5 +62,39 @@ class VerificationViewModelTest {
         advanceUntilIdle()
 
         assertEquals(VerificationEvent.Completed, event.await())
+    }
+
+    private class StubVerificationRepository : VerificationRepository {
+        private var session = sampleSession()
+
+        override suspend fun loadSession(orderUnitId: String): VerificationSession = session
+
+        override suspend fun updateQuestionAnswer(orderUnitId: String, sectionId: String, questionId: String, optionId: String): VerificationSession = session
+
+        override suspend fun updateQuestionComment(orderUnitId: String, sectionId: String, questionId: String, value: String): VerificationSession = session
+
+        override suspend fun updateSectionNote(orderUnitId: String, sectionId: String, value: String): VerificationSession = session
+
+        override suspend fun updateComments(orderUnitId: String, value: String): VerificationSession {
+            session = session.copy(comments = value)
+            return session
+        }
+
+        override suspend fun addEvidence(orderUnitId: String, sectionId: String, upload: EvidenceUpload): VerificationSession = session
+
+        override suspend fun removeEvidence(orderUnitId: String, evidenceId: String): VerificationSession {
+            session = session.copy(
+                sections = session.sections.map { section ->
+                    section.copy(evidence = section.evidence.filterNot { it.id == evidenceId })
+                }
+            )
+            return session
+        }
+
+        override suspend fun pauseSession(orderUnitId: String) = Unit
+
+        override suspend fun completeSession(orderUnitId: String) = Unit
+
+        override suspend fun abandonSession(orderUnitId: String) = Unit
     }
 }

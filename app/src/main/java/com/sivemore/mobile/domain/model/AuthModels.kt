@@ -1,13 +1,13 @@
 package com.sivemore.mobile.domain.model
 
 data class AuthCredentials(
-    val email: String,
+    val username: String,
     val password: String,
 )
 
 data class AuthenticatedUser(
-    val id: String,
-    val displayName: String,
-    val email: String,
+    val id: Long,
+    val username: String,
+    val fullName: String,
+    val role: String,
 )
-

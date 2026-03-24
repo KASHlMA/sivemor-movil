@@ -21,33 +21,28 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AuthViewModelTest {
-
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
     @Test
     fun submitWithBlankFieldsShowsValidationError() = runTest {
-        val viewModel = AuthViewModel(
-            authRepository = SuccessAuthRepository(),
-        )
+        val viewModel = AuthViewModel(authRepository = SuccessAuthRepository())
 
         viewModel.onAction(AuthUiAction.Submit)
         advanceUntilIdle()
 
         assertEquals(
-            "Ingresa correo y contraseña para continuar.",
+            "Ingresa usuario y contraseña para continuar.",
             viewModel.uiState.value.errorMessage,
         )
     }
 
     @Test
     fun submitWithCredentialsEmitsAuthenticatedEvent() = runTest {
-        val viewModel = AuthViewModel(
-            authRepository = SuccessAuthRepository(),
-        )
+        val viewModel = AuthViewModel(authRepository = SuccessAuthRepository())
         val event = async { viewModel.events.first() }
 
-        viewModel.onAction(AuthUiAction.EmailChanged("team@sivemore.app"))
+        viewModel.onAction(AuthUiAction.UsernameChanged("tecnico1"))
         viewModel.onAction(AuthUiAction.PasswordChanged("secret"))
         viewModel.onAction(AuthUiAction.Submit)
         advanceUntilIdle()
@@ -57,46 +52,52 @@ class AuthViewModelTest {
     }
 
     @Test
+    fun existingSessionImmediatelyAuthenticates() = runTest {
+        val viewModel = AuthViewModel(authRepository = SuccessAuthRepository(hasSession = true))
+
+        assertEquals(AuthEvent.Authenticated, viewModel.events.first())
+    }
+
+    @Test
     fun submitKeepsLoadingTrueWhileRepositoryIsInFlight() = runTest {
         val repository = BlockingAuthRepository()
         val viewModel = AuthViewModel(authRepository = repository)
 
-        viewModel.onAction(AuthUiAction.EmailChanged("team@sivemore.app"))
+        viewModel.onAction(AuthUiAction.UsernameChanged("tecnico1"))
         viewModel.onAction(AuthUiAction.PasswordChanged("secret"))
         viewModel.onAction(AuthUiAction.Submit)
         runCurrent()
 
         assertTrue(viewModel.uiState.value.isLoading)
 
-        repository.response.complete(Result.success(SAMPLE_USER))
+        repository.response.complete(Result.success(sampleUser))
         advanceUntilIdle()
 
         assertFalse(viewModel.uiState.value.isLoading)
     }
 
-    private class SuccessAuthRepository : AuthRepository {
-        override suspend fun signIn(credentials: AuthCredentials): Result<AuthenticatedUser> {
-            return Result.success(SAMPLE_USER.copy(email = credentials.email))
-        }
+    private class SuccessAuthRepository(
+        private val hasSession: Boolean = false,
+    ) : AuthRepository {
+        override suspend fun signIn(credentials: AuthCredentials): Result<AuthenticatedUser> =
+            Result.success(sampleUser.copy(username = credentials.username))
 
-        override suspend fun continueAsGuest(): AuthenticatedUser = SAMPLE_USER
+        override suspend fun signOut() = Unit
+
+        override fun hasActiveSession(): Boolean = hasSession
+
+        override fun currentUser(): AuthenticatedUser? = sampleUser.takeIf { hasSession }
     }
 
     private class BlockingAuthRepository : AuthRepository {
         val response = CompletableDeferred<Result<AuthenticatedUser>>()
 
-        override suspend fun signIn(credentials: AuthCredentials): Result<AuthenticatedUser> {
-            return response.await()
-        }
+        override suspend fun signIn(credentials: AuthCredentials): Result<AuthenticatedUser> = response.await()
 
-        override suspend fun continueAsGuest(): AuthenticatedUser = SAMPLE_USER
-    }
+        override suspend fun signOut() = Unit
 
-    companion object {
-        private val SAMPLE_USER = AuthenticatedUser(
-            id = "1",
-            displayName = "Mariana Ortiz",
-            email = "team@sivemor.mx",
-        )
+        override fun hasActiveSession(): Boolean = false
+
+        override fun currentUser(): AuthenticatedUser? = null
     }
 }

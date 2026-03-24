@@ -220,9 +220,9 @@ fun VehicleStatusChip(
     modifier: Modifier = Modifier,
 ) {
     val color = when (status) {
-        VehicleStatus.Pending -> Pending
-        VehicleStatus.Approved -> Approved
-        VehicleStatus.Rejected -> Rejected
+        VehicleStatus.Assigned -> Pending
+        VehicleStatus.InProgress -> Approved
+        VehicleStatus.Paused -> Rejected
     }
     Box(
         modifier = modifier

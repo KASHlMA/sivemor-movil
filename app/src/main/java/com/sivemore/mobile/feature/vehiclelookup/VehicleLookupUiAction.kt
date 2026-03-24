@@ -16,6 +16,7 @@ data class VehicleLookupUiState(
     val query: String = "",
     val vehicles: List<VehicleSummary> = emptyList(),
     val pendingVehicle: VehicleSummary? = null,
+    val errorMessage: String? = null,
 )
 
 sealed interface VehicleLookupEvent {

@@ -1,50 +1,47 @@
 package com.sivemore.mobile.domain.repository
 
-import com.sivemore.mobile.domain.model.EvidenceSource
-import com.sivemore.mobile.domain.model.InspectionCategory
+import com.sivemore.mobile.domain.model.EvidenceUpload
 import com.sivemore.mobile.domain.model.VerificationSession
 
 interface VerificationRepository {
-    suspend fun loadSession(vehicleId: String): VerificationSession
-    suspend fun setActiveCategory(
-        vehicleId: String,
-        category: InspectionCategory,
-    ): VerificationSession
-
-    suspend fun toggleOption(
-        vehicleId: String,
-        itemId: String,
+    suspend fun loadSession(orderUnitId: String): VerificationSession
+    suspend fun updateQuestionAnswer(
+        orderUnitId: String,
+        sectionId: String,
+        questionId: String,
         optionId: String,
     ): VerificationSession
 
-    suspend fun updateNote(
-        vehicleId: String,
-        itemId: String,
+    suspend fun updateQuestionComment(
+        orderUnitId: String,
+        sectionId: String,
+        questionId: String,
         value: String,
     ): VerificationSession
 
-    suspend fun updateNumeric(
-        vehicleId: String,
-        itemId: String,
+    suspend fun updateSectionNote(
+        orderUnitId: String,
+        sectionId: String,
         value: String,
     ): VerificationSession
 
     suspend fun updateComments(
-        vehicleId: String,
+        orderUnitId: String,
         value: String,
     ): VerificationSession
 
     suspend fun addEvidence(
-        vehicleId: String,
-        source: EvidenceSource,
+        orderUnitId: String,
+        sectionId: String,
+        upload: EvidenceUpload,
     ): VerificationSession
 
     suspend fun removeEvidence(
-        vehicleId: String,
+        orderUnitId: String,
         evidenceId: String,
     ): VerificationSession
 
-    suspend fun pauseSession(vehicleId: String)
-    suspend fun completeSession(vehicleId: String)
-    suspend fun abandonSession(vehicleId: String)
+    suspend fun pauseSession(orderUnitId: String)
+    suspend fun completeSession(orderUnitId: String)
+    suspend fun abandonSession(orderUnitId: String)
 }

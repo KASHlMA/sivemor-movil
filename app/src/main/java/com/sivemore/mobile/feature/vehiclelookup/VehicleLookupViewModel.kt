@@ -18,7 +18,6 @@ import kotlinx.coroutines.launch
 class VehicleLookupViewModel @Inject constructor(
     private val vehicleRepository: VehicleRepository,
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow(VehicleLookupUiState())
     val uiState: StateFlow<VehicleLookupUiState> = _uiState.asStateFlow()
 
@@ -33,11 +32,7 @@ class VehicleLookupViewModel @Inject constructor(
         when (action) {
             VehicleLookupUiAction.Refresh,
             VehicleLookupUiAction.SearchSubmitted -> refresh()
-
-            VehicleLookupUiAction.PendingDialogDismissed -> _uiState.update {
-                it.copy(pendingVehicle = null)
-            }
-
+            VehicleLookupUiAction.PendingDialogDismissed -> _uiState.update { it.copy(pendingVehicle = null) }
             VehicleLookupUiAction.PendingDialogConfirmed -> continuePendingVehicle()
             is VehicleLookupUiAction.QueryChanged -> _uiState.update { it.copy(query = action.value) }
             is VehicleLookupUiAction.VehicleTapped -> onVehicleTapped(action.vehicleId)
@@ -46,13 +41,23 @@ class VehicleLookupViewModel @Inject constructor(
 
     private fun refresh() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            val vehicles = vehicleRepository.loadVehicles(uiState.value.query)
-            _uiState.update {
-                it.copy(
-                    isLoading = false,
-                    vehicles = vehicles,
-                )
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            runCatching {
+                vehicleRepository.loadVehicles(uiState.value.query)
+            }.onSuccess { vehicles ->
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        vehicles = vehicles,
+                    )
+                }
+            }.onFailure { failure ->
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = failure.message ?: "No fue posible cargar las órdenes asignadas.",
+                    )
+                }
             }
         }
     }

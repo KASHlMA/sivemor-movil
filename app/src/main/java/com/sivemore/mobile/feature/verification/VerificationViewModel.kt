@@ -3,8 +3,6 @@ package com.sivemore.mobile.feature.verification
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sivemore.mobile.domain.model.EvidenceSource
-import com.sivemore.mobile.domain.model.InspectionCategory
 import com.sivemore.mobile.domain.repository.VerificationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -22,8 +20,7 @@ class VerificationViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val verificationRepository: VerificationRepository,
 ) : ViewModel() {
-
-    private val vehicleId: String = checkNotNull(savedStateHandle["vehicleId"])
+    private val orderUnitId: String = checkNotNull(savedStateHandle["vehicleId"])
 
     private val _uiState = MutableStateFlow(VerificationUiState())
     val uiState: StateFlow<VerificationUiState> = _uiState.asStateFlow()
@@ -37,24 +34,33 @@ class VerificationViewModel @Inject constructor(
 
     fun onAction(action: VerificationUiAction) {
         when (action) {
-            is VerificationUiAction.CategorySelected -> setCategory(action.category)
-            is VerificationUiAction.OptionToggled -> updateOption(action.itemId, action.optionId)
-            is VerificationUiAction.NoteChanged -> updateNote(action.itemId, action.value)
-            is VerificationUiAction.NumericChanged -> updateNumeric(action.itemId, action.value)
-            is VerificationUiAction.EvidenceSourceSelected -> addEvidence(action.source)
-            is VerificationUiAction.RemoveEvidence -> removeEvidence(action.evidenceId)
-            is VerificationUiAction.CommentDraftChanged -> _uiState.update { it.copy(commentDraft = action.value) }
+            is VerificationUiAction.QuestionOptionSelected -> mutate {
+                verificationRepository.updateQuestionAnswer(orderUnitId, action.sectionId, action.itemId, action.optionId)
+            }
+            is VerificationUiAction.QuestionCommentChanged -> mutate {
+                verificationRepository.updateQuestionComment(orderUnitId, action.sectionId, action.itemId, action.value)
+            }
+            is VerificationUiAction.SectionNoteChanged -> mutate {
+                verificationRepository.updateSectionNote(orderUnitId, action.sectionId, action.value)
+            }
             VerificationUiAction.AddEvidenceRequested -> _uiState.update { it.copy(showEvidenceDialog = true) }
             VerificationUiAction.EvidenceDialogDismissed -> _uiState.update { it.copy(showEvidenceDialog = false) }
-            VerificationUiAction.AddCommentRequested -> _uiState.update {
-                it.copy(
-                    showCommentDialog = true,
-                    commentDraft = it.session?.comments.orEmpty(),
-                )
+            is VerificationUiAction.EvidencePicked -> mutate(
+                closeEvidenceDialog = true,
+            ) {
+                verificationRepository.addEvidence(orderUnitId, action.sectionId, action.upload)
             }
-
+            is VerificationUiAction.RemoveEvidence -> mutate {
+                verificationRepository.removeEvidence(orderUnitId, action.evidenceId)
+            }
+            VerificationUiAction.AddCommentRequested -> _uiState.update {
+                it.copy(showCommentDialog = true, commentDraft = it.session?.comments.orEmpty())
+            }
+            is VerificationUiAction.CommentDraftChanged -> _uiState.update { it.copy(commentDraft = action.value) }
             VerificationUiAction.CommentDialogDismissed -> _uiState.update { it.copy(showCommentDialog = false) }
-            VerificationUiAction.CommentSaved -> saveComments()
+            VerificationUiAction.CommentSaved -> mutate(closeCommentDialog = true) {
+                verificationRepository.updateComments(orderUnitId, uiState.value.commentDraft)
+            }
             VerificationUiAction.SubmitRequested -> _uiState.update { it.copy(showSubmitDialog = true) }
             VerificationUiAction.SubmitDismissed -> _uiState.update { it.copy(showSubmitDialog = false) }
             VerificationUiAction.SubmitConfirmed -> completeVerification()
@@ -64,85 +70,72 @@ class VerificationViewModel @Inject constructor(
 
     private fun refresh() {
         viewModelScope.launch {
-            val session = verificationRepository.loadSession(vehicleId)
-            _uiState.value = VerificationUiState(
-                isLoading = false,
-                session = session,
-                commentDraft = session.comments,
-            )
-        }
-    }
-
-    private fun setCategory(category: InspectionCategory) {
-        viewModelScope.launch {
-            val session = verificationRepository.setActiveCategory(vehicleId, category)
-            _uiState.update { it.copy(session = session) }
-        }
-    }
-
-    private fun updateOption(itemId: String, optionId: String) {
-        viewModelScope.launch {
-            val session = verificationRepository.toggleOption(vehicleId, itemId, optionId)
-            _uiState.update { it.copy(session = session) }
-        }
-    }
-
-    private fun updateNote(itemId: String, value: String) {
-        viewModelScope.launch {
-            val session = verificationRepository.updateNote(vehicleId, itemId, value)
-            _uiState.update { it.copy(session = session) }
-        }
-    }
-
-    private fun updateNumeric(itemId: String, value: String) {
-        viewModelScope.launch {
-            val session = verificationRepository.updateNumeric(vehicleId, itemId, value)
-            _uiState.update { it.copy(session = session) }
-        }
-    }
-
-    private fun addEvidence(source: EvidenceSource) {
-        viewModelScope.launch {
-            val session = verificationRepository.addEvidence(vehicleId, source)
-            _uiState.update {
-                it.copy(
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            runCatching {
+                verificationRepository.loadSession(orderUnitId)
+            }.onSuccess { session ->
+                _uiState.value = VerificationUiState(
+                    isLoading = false,
                     session = session,
-                    showEvidenceDialog = false,
+                    commentDraft = session.comments,
                 )
+            }.onFailure { failure ->
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = failure.message ?: "No fue posible cargar la inspección.",
+                    )
+                }
             }
         }
     }
 
-    private fun removeEvidence(evidenceId: String) {
+    private fun mutate(
+        closeEvidenceDialog: Boolean = false,
+        closeCommentDialog: Boolean = false,
+        mutation: suspend () -> com.sivemore.mobile.domain.model.VerificationSession,
+    ) {
         viewModelScope.launch {
-            val session = verificationRepository.removeEvidence(vehicleId, evidenceId)
-            _uiState.update { it.copy(session = session) }
-        }
-    }
-
-    private fun saveComments() {
-        viewModelScope.launch {
-            val session = verificationRepository.updateComments(vehicleId, uiState.value.commentDraft)
-            _uiState.update {
-                it.copy(
-                    session = session,
-                    showCommentDialog = false,
-                )
-            }
+            runCatching { mutation() }
+                .onSuccess { session ->
+                    _uiState.update {
+                        it.copy(
+                            session = session,
+                            errorMessage = null,
+                            showEvidenceDialog = if (closeEvidenceDialog) false else it.showEvidenceDialog,
+                            showCommentDialog = if (closeCommentDialog) false else it.showCommentDialog,
+                        )
+                    }
+                }
+                .onFailure { failure ->
+                    _uiState.update {
+                        it.copy(errorMessage = failure.message ?: "No fue posible actualizar la inspección.")
+                    }
+                }
         }
     }
 
     private fun completeVerification() {
         viewModelScope.launch {
-            verificationRepository.completeSession(vehicleId)
-            _uiState.update { it.copy(showSubmitDialog = false) }
-            _events.emit(VerificationEvent.Completed)
+            runCatching {
+                verificationRepository.completeSession(orderUnitId)
+            }.onSuccess {
+                _uiState.update { it.copy(showSubmitDialog = false) }
+                _events.emit(VerificationEvent.Completed)
+            }.onFailure { failure ->
+                _uiState.update {
+                    it.copy(
+                        showSubmitDialog = false,
+                        errorMessage = failure.message ?: "No fue posible enviar la inspección.",
+                    )
+                }
+            }
         }
     }
 
     private fun openSessionActions() {
         viewModelScope.launch {
-            _events.emit(VerificationEvent.OpenSessionActions(vehicleId))
+            _events.emit(VerificationEvent.OpenSessionActions(orderUnitId))
         }
     }
 }

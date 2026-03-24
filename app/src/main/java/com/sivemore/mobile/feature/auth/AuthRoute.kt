@@ -1,7 +1,7 @@
 package com.sivemore.mobile.feature.auth
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -113,12 +113,12 @@ fun AuthScreen(
             )
 
             OutlinedTextField(
-                value = state.email,
-                onValueChange = { onAction(AuthUiAction.EmailChanged(it)) },
+                value = state.username,
+                onValueChange = { onAction(AuthUiAction.UsernameChanged(it)) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .testTag("auth_email"),
-                label = { Text(stringResource(R.string.auth_email_label)) },
+                    .testTag("auth_username"),
+                label = { Text(stringResource(R.string.auth_username_label)) },
                 singleLine = true,
             )
             OutlinedTextField(
@@ -166,7 +166,7 @@ fun AuthScreen(
 private fun AuthScreenPreview() {
     SivemoreTheme {
         AuthScreen(
-            state = AuthUiState(email = "inspector@sivemor.mx", password = "secret"),
+            state = AuthUiState(username = "tecnico1", password = "secret"),
             onAction = {},
         )
     }

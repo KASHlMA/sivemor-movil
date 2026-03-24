@@ -1,7 +1,6 @@
 package com.sivemore.mobile.feature.sessionactions
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -76,7 +75,7 @@ fun SessionActionsScreen(
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
-                text = "Vehículo ${state.vehicleLabel}",
+                text = "Unidad ${state.vehicleLabel}",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -84,11 +83,17 @@ fun SessionActionsScreen(
                 onClick = { onAction(SessionActionsUiAction.PauseTapped) },
                 modifier = Modifier.testTag("pause_session_button"),
             ) {
-                Text("Pausar verificación")
+                Text("Pausar inspección")
             }
             OutlinedButton(
-                onClick = { onAction(SessionActionsUiAction.LogoutTapped) },
-                modifier = Modifier.testTag("logout_session_button"),
+                onClick = { onAction(SessionActionsUiAction.AbandonTapped) },
+                modifier = Modifier.testTag("abandon_session_button"),
+            ) {
+                Text("Abandonar borrador")
+            }
+            OutlinedButton(
+                onClick = { onAction(SessionActionsUiAction.SignOutTapped) },
+                modifier = Modifier.testTag("signout_button"),
             ) {
                 Text("Cerrar sesión")
             }
@@ -97,7 +102,7 @@ fun SessionActionsScreen(
 
     if (state.showPauseDialog) {
         ConfirmationDialog(
-            title = "Pausar verificación",
+            title = "Pausar inspección",
             text = "La evaluación permanecerá disponible para retomarla más tarde.",
             confirmLabel = "Pausar",
             onConfirm = { onAction(SessionActionsUiAction.ConfirmPause) },
@@ -106,14 +111,25 @@ fun SessionActionsScreen(
         )
     }
 
-    if (state.showLogoutDialog) {
+    if (state.showAbandonDialog) {
+        ConfirmationDialog(
+            title = "Abandonar borrador",
+            text = "Se archivará el borrador actual y deberás iniciar una nueva inspección si vuelves a entrar.",
+            confirmLabel = "Abandonar",
+            onConfirm = { onAction(SessionActionsUiAction.ConfirmAbandon) },
+            onDismiss = { onAction(SessionActionsUiAction.DismissDialogs) },
+            modifier = Modifier.testTag("abandon_dialog"),
+        )
+    }
+
+    if (state.showSignOutDialog) {
         ConfirmationDialog(
             title = "Cerrar sesión",
-            text = "Se cerrará la sesión y volverás a la pantalla de acceso.",
+            text = "Se cerrará tu sesión actual en el dispositivo.",
             confirmLabel = "Salir",
-            onConfirm = { onAction(SessionActionsUiAction.ConfirmLogout) },
+            onConfirm = { onAction(SessionActionsUiAction.ConfirmSignOut) },
             onDismiss = { onAction(SessionActionsUiAction.DismissDialogs) },
-            modifier = Modifier.testTag("logout_dialog"),
+            modifier = Modifier.testTag("signout_dialog"),
         )
     }
 }

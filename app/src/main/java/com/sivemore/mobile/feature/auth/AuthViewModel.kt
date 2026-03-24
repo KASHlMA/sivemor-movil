@@ -19,25 +19,29 @@ import kotlinx.coroutines.launch
 class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository,
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
     private val _events = MutableSharedFlow<AuthEvent>()
     val events: SharedFlow<AuthEvent> = _events.asSharedFlow()
 
+    init {
+        if (authRepository.hasActiveSession()) {
+            viewModelScope.launch {
+                _events.emit(AuthEvent.Authenticated)
+            }
+        }
+    }
+
     fun onAction(action: AuthUiAction) {
         when (action) {
-            is AuthUiAction.EmailChanged -> _uiState.update {
-                it.copy(email = action.value, errorMessage = null)
+            is AuthUiAction.UsernameChanged -> _uiState.update {
+                it.copy(username = action.value, errorMessage = null)
             }
-
             is AuthUiAction.PasswordChanged -> _uiState.update {
                 it.copy(password = action.value, errorMessage = null)
             }
-
             AuthUiAction.Submit -> signIn()
-            AuthUiAction.ContinueAsGuest -> continueAsGuest()
         }
     }
 
@@ -45,7 +49,7 @@ class AuthViewModel @Inject constructor(
         val state = uiState.value
         if (!state.isSubmitEnabled) {
             _uiState.update {
-                it.copy(errorMessage = "Ingresa correo y contraseña para continuar.")
+                it.copy(errorMessage = "Ingresa usuario y contraseña para continuar.")
             }
             return
         }
@@ -53,30 +57,21 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             authRepository.signIn(
-                credentials = AuthCredentials(
-                    email = state.email.trim(),
+                AuthCredentials(
+                    username = state.username.trim(),
                     password = state.password,
-                ),
+                )
             ).onSuccess {
                 _uiState.update { current -> current.copy(isLoading = false) }
                 _events.emit(AuthEvent.Authenticated)
-            }.onFailure {
+            }.onFailure { failure ->
                 _uiState.update { current ->
                     current.copy(
                         isLoading = false,
-                        errorMessage = it.message ?: "No fue posible iniciar sesión.",
+                        errorMessage = failure.message ?: "No fue posible iniciar sesión.",
                     )
                 }
             }
-        }
-    }
-
-    private fun continueAsGuest() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            authRepository.continueAsGuest()
-            _uiState.update { it.copy(isLoading = false) }
-            _events.emit(AuthEvent.Authenticated)
         }
     }
 }

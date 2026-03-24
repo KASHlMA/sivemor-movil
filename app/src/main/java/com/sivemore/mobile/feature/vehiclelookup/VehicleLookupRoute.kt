@@ -24,10 +24,12 @@ import com.sivemore.mobile.R
 import com.sivemore.mobile.app.designsystem.BrandedHeader
 import com.sivemore.mobile.app.designsystem.BrandedLoadingScreen
 import com.sivemore.mobile.app.designsystem.ConfirmationDialog
+import com.sivemore.mobile.app.designsystem.EmptyStateCard
 import com.sivemore.mobile.app.designsystem.SearchField
 import com.sivemore.mobile.app.designsystem.SivemoreTheme
 import com.sivemore.mobile.app.designsystem.SivemoreThemeTokens
 import com.sivemore.mobile.app.designsystem.VehicleResultCard
+import com.sivemore.mobile.domain.model.VehicleStatus
 import com.sivemore.mobile.preview.PhonePreview
 import kotlinx.coroutines.flow.collectLatest
 
@@ -81,9 +83,14 @@ fun VehicleLookupScreen(
             verticalArrangement = Arrangement.spacedBy(spacing.md),
         ) {
             Text(
-                text = "Visualización de vehículos",
+                text = "Órdenes asignadas",
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = state.errorMessage ?: "Busca por placa, orden o cliente para abrir o retomar un borrador.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (state.errorMessage == null) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -104,23 +111,31 @@ fun VehicleLookupScreen(
             }
         }
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 23.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            items(state.vehicles, key = { it.id }) { vehicle ->
-                VehicleResultCard(
-                    plates = vehicle.plates,
-                    serialNumber = vehicle.serialNumber,
-                    vehicleNumber = vehicle.vehicleNumber,
-                    admissionDate = vehicle.admissionDate,
-                    completedDate = vehicle.completedDate,
-                    status = vehicle.status,
-                    onClick = { onAction(VehicleLookupUiAction.VehicleTapped(vehicle.id)) },
-                    modifier = Modifier.testTag("vehicle_card_${vehicle.id}"),
-                )
+        if (state.vehicles.isEmpty()) {
+            EmptyStateCard(
+                title = "Sin asignaciones",
+                description = "No hay unidades asignadas para este técnico en este momento.",
+                modifier = Modifier.padding(horizontal = 24.dp),
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 23.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                items(state.vehicles, key = { it.id }) { vehicle ->
+                    VehicleResultCard(
+                        plates = vehicle.plates,
+                        serialNumber = vehicle.serialNumber,
+                        vehicleNumber = vehicle.vehicleNumber,
+                        admissionDate = vehicle.admissionDate,
+                        completedDate = vehicle.completedDate,
+                        status = vehicle.status,
+                        onClick = { onAction(VehicleLookupUiAction.VehicleTapped(vehicle.id)) },
+                        modifier = Modifier.testTag("vehicle_card_${vehicle.id}"),
+                    )
+                }
             }
         }
     }
@@ -145,7 +160,19 @@ private fun VehicleLookupScreenPreview() {
         VehicleLookupScreen(
             state = VehicleLookupUiState(
                 isLoading = false,
-                vehicles = com.sivemore.mobile.data.fixtures.FakeCatalog.defaultVehicles(),
+                vehicles = listOf(
+                    com.sivemore.mobile.domain.model.VehicleSummary(
+                        id = "1",
+                        plates = "MOR-123-A",
+                        serialNumber = "ORD-2026-001",
+                        vehicleNumber = "Transportes Morelos",
+                        status = VehicleStatus.InProgress,
+                        admissionDate = "23/03/2026 10:00",
+                        completedDate = "Cuernavaca",
+                        hasPendingVerification = true,
+                        draftInspectionId = "99",
+                    )
+                ),
             ),
             onAction = {},
         )

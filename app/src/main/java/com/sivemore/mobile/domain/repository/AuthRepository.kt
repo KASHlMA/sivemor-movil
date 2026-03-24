@@ -5,6 +5,7 @@ import com.sivemore.mobile.domain.model.AuthenticatedUser
 
 interface AuthRepository {
     suspend fun signIn(credentials: AuthCredentials): Result<AuthenticatedUser>
-    suspend fun continueAsGuest(): AuthenticatedUser
+    suspend fun signOut()
+    fun hasActiveSession(): Boolean
+    fun currentUser(): AuthenticatedUser?
 }
-

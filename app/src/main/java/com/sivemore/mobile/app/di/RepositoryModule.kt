@@ -1,8 +1,8 @@
 package com.sivemore.mobile.app.di
 
-import com.sivemore.mobile.data.repository.FakeAuthRepository
-import com.sivemore.mobile.data.repository.FakeVehicleRepository
-import com.sivemore.mobile.data.repository.FakeVerificationRepository
+import com.sivemore.mobile.data.repository.RealAuthRepository
+import com.sivemore.mobile.data.repository.RealVehicleRepository
+import com.sivemore.mobile.data.repository.RealVerificationRepository
 import com.sivemore.mobile.domain.repository.AuthRepository
 import com.sivemore.mobile.domain.repository.VehicleRepository
 import com.sivemore.mobile.domain.repository.VerificationRepository
@@ -15,22 +15,21 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
-
     @Binds
     @Singleton
     abstract fun bindAuthRepository(
-        implementation: FakeAuthRepository,
+        implementation: RealAuthRepository,
     ): AuthRepository
 
     @Binds
     @Singleton
     abstract fun bindVehicleRepository(
-        implementation: FakeVehicleRepository,
+        implementation: RealVehicleRepository,
     ): VehicleRepository
 
     @Binds
     @Singleton
     abstract fun bindVerificationRepository(
-        implementation: FakeVerificationRepository,
+        implementation: RealVerificationRepository,
     ): VerificationRepository
 }

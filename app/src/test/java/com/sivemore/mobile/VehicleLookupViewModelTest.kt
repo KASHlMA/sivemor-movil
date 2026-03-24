@@ -1,7 +1,7 @@
 package com.sivemore.mobile
 
-import com.sivemore.mobile.data.repository.FakeVerificationStore
-import com.sivemore.mobile.data.repository.FakeVehicleRepository
+import com.sivemore.mobile.domain.model.VehicleSummary
+import com.sivemore.mobile.domain.repository.VehicleRepository
 import com.sivemore.mobile.feature.vehiclelookup.VehicleLookupEvent
 import com.sivemore.mobile.feature.vehiclelookup.VehicleLookupUiAction
 import com.sivemore.mobile.feature.vehiclelookup.VehicleLookupViewModel
@@ -18,16 +18,12 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class VehicleLookupViewModelTest {
-
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
     @Test
     fun refreshLoadsVehicles() = runTest {
-        val viewModel = VehicleLookupViewModel(
-            vehicleRepository = FakeVehicleRepository(FakeVerificationStore()),
-        )
-
+        val viewModel = VehicleLookupViewModel(vehicleRepository = StubVehicleRepository())
         advanceUntilIdle()
 
         assertTrue(viewModel.uiState.value.vehicles.isNotEmpty())
@@ -35,9 +31,7 @@ class VehicleLookupViewModelTest {
 
     @Test
     fun searchFiltersVehiclesByPlate() = runTest {
-        val viewModel = VehicleLookupViewModel(
-            vehicleRepository = FakeVehicleRepository(FakeVerificationStore()),
-        )
+        val viewModel = VehicleLookupViewModel(vehicleRepository = StubVehicleRepository())
         advanceUntilIdle()
 
         viewModel.onAction(VehicleLookupUiAction.QueryChanged("MOR"))
@@ -45,18 +39,17 @@ class VehicleLookupViewModelTest {
         advanceUntilIdle()
 
         assertEquals(1, viewModel.uiState.value.vehicles.size)
-        assertEquals("MOR-TQ8-452", viewModel.uiState.value.vehicles.first().plates)
+        assertEquals("MOR-123-A", viewModel.uiState.value.vehicles.first().plates)
     }
 
     @Test
     fun pendingVehicleSelectionShowsDialogAndContinuesFlow() = runTest {
-        val viewModel = VehicleLookupViewModel(
-            vehicleRepository = FakeVehicleRepository(FakeVerificationStore()),
-        )
+        val repository = StubVehicleRepository(hasPendingVerification = true)
+        val viewModel = VehicleLookupViewModel(vehicleRepository = repository)
         advanceUntilIdle()
         val event = async { viewModel.events.first() }
 
-        viewModel.onAction(VehicleLookupUiAction.VehicleTapped("veh-003"))
+        viewModel.onAction(VehicleLookupUiAction.VehicleTapped("1"))
         advanceUntilIdle()
 
         assertNotNull(viewModel.uiState.value.pendingVehicle)
@@ -64,9 +57,17 @@ class VehicleLookupViewModelTest {
         viewModel.onAction(VehicleLookupUiAction.PendingDialogConfirmed)
         advanceUntilIdle()
 
-        assertEquals(
-            VehicleLookupEvent.OpenVerification("veh-003"),
-            event.await(),
-        )
+        assertEquals(VehicleLookupEvent.OpenVerification("1"), event.await())
+    }
+
+    private class StubVehicleRepository(
+        private val hasPendingVerification: Boolean = false,
+    ) : VehicleRepository {
+        override suspend fun loadVehicles(query: String): List<VehicleSummary> =
+            listOf(sampleVehicle(hasPendingVerification = hasPendingVerification))
+                .filter { query.isBlank() || it.plates.contains(query, ignoreCase = true) }
+
+        override suspend fun loadVehicle(vehicleId: String): VehicleSummary? =
+            sampleVehicle(id = vehicleId, hasPendingVerification = hasPendingVerification)
     }
 }

@@ -1,9 +1,9 @@
 package com.sivemore.mobile.domain.model
 
 enum class VehicleStatus(val label: String) {
-    Pending("Pendiente"),
-    Approved("Aprobado"),
-    Rejected("Reprobado"),
+    Assigned("Asignada"),
+    InProgress("En progreso"),
+    Paused("Pausada"),
 }
 
 enum class VerificationSessionStatus {
@@ -12,21 +12,12 @@ enum class VerificationSessionStatus {
     Completed,
 }
 
-enum class InspectionCategory(val label: String) {
-    Lights("Luces"),
-    Tires("Llantas"),
-    DirectionStructure("Dirección"),
-    AirBrakes("Aire/Frenos"),
-    EngineEmissions("Motor"),
-    Others("Otros"),
-    Evidence("Evidencias"),
-}
-
-enum class InspectionItemInputMode {
-    Checkboxes,
-    CheckboxesWithNote,
-    CheckboxesWithNumeric,
-    EvidenceTiles,
+data class InspectionCategory(
+    val id: String,
+    val label: String,
+) {
+    val name: String
+        get() = id
 }
 
 enum class EvidenceSource(val label: String) {
@@ -43,42 +34,38 @@ data class VehicleSummary(
     val admissionDate: String,
     val completedDate: String?,
     val hasPendingVerification: Boolean,
+    val draftInspectionId: String?,
 )
 
 data class VerificationSession(
     val id: String,
-    val vehicleId: String,
-    val selectedCategory: InspectionCategory,
+    val orderUnitId: String,
+    val orderNumber: String,
+    val vehiclePlate: String,
+    val clientCompanyName: String,
     val status: VerificationSessionStatus,
-    val categories: List<InspectionCategoryContent>,
-    val evidence: List<EvidenceItem>,
+    val sections: List<InspectionSection>,
     val comments: String,
     val updatedAtLabel: String,
-)
-
-data class InspectionCategoryContent(
-    val category: InspectionCategory,
-    val sections: List<InspectionSection>,
+    val evidenceCount: Int,
 )
 
 data class InspectionSection(
     val id: String,
     val title: String,
+    val description: String?,
+    val noteValue: String,
     val items: List<InspectionItem>,
+    val evidence: List<EvidenceItem>,
 )
 
 data class InspectionItem(
     val id: String,
     val title: String,
-    val options: List<InspectionOption> = emptyList(),
-    val inputMode: InspectionItemInputMode = InspectionItemInputMode.Checkboxes,
-    val selectedOptionIds: Set<String> = emptySet(),
-    val noteLabel: String? = null,
-    val noteValue: String = "",
-    val numericLabel: String? = null,
-    val numericValue: String = "",
-    val numericSuffix: String? = null,
-    val helperText: String? = null,
+    val required: Boolean,
+    val options: List<InspectionOption>,
+    val selectedOptionId: String?,
+    val noteValue: String,
 )
 
 data class InspectionOption(
@@ -90,7 +77,12 @@ data class EvidenceItem(
     val id: String,
     val title: String,
     val subtitle: String,
-    val source: EvidenceSource,
     val addedAtLabel: String,
     val accentColor: Long,
+)
+
+data class EvidenceUpload(
+    val uri: String,
+    val fileName: String?,
+    val mimeType: String?,
 )
