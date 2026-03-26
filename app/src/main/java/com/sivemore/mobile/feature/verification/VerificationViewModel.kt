@@ -29,11 +29,12 @@ class VerificationViewModel @Inject constructor(
     val events: SharedFlow<VerificationEvent> = _events.asSharedFlow()
 
     init {
-        refresh()
+        refresh(initialLoad = true)
     }
 
     fun onAction(action: VerificationUiAction) {
         when (action) {
+            VerificationUiAction.Refresh -> refresh()
             is VerificationUiAction.QuestionOptionSelected -> mutate {
                 verificationRepository.updateQuestionAnswer(orderUnitId, action.sectionId, action.itemId, action.optionId)
             }
@@ -68,22 +69,34 @@ class VerificationViewModel @Inject constructor(
         }
     }
 
-    private fun refresh() {
+    private fun refresh(initialLoad: Boolean = false) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            val hasVisibleContent = uiState.value.session != null
+            _uiState.update {
+                it.copy(
+                    isLoading = initialLoad || !hasVisibleContent,
+                    isRefreshing = !initialLoad && hasVisibleContent,
+                    errorMessage = null,
+                )
+            }
             runCatching {
                 verificationRepository.loadSession(orderUnitId)
             }.onSuccess { session ->
-                _uiState.value = VerificationUiState(
-                    isLoading = false,
-                    session = session,
-                    commentDraft = session.comments,
-                )
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        isRefreshing = false,
+                        session = session,
+                        commentDraft = session.comments,
+                        errorMessage = null,
+                    )
+                }
             }.onFailure { failure ->
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        errorMessage = failure.message ?: "No fue posible cargar la inspección.",
+                        isRefreshing = false,
+                        errorMessage = failure.message ?: "No fue posible cargar la inspeccion.",
                     )
                 }
             }
@@ -109,7 +122,7 @@ class VerificationViewModel @Inject constructor(
                 }
                 .onFailure { failure ->
                     _uiState.update {
-                        it.copy(errorMessage = failure.message ?: "No fue posible actualizar la inspección.")
+                        it.copy(errorMessage = failure.message ?: "No fue posible actualizar la inspeccion.")
                     }
                 }
         }
@@ -126,7 +139,7 @@ class VerificationViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         showSubmitDialog = false,
-                        errorMessage = failure.message ?: "No fue posible enviar la inspección.",
+                        errorMessage = failure.message ?: "No fue posible enviar la inspeccion.",
                     )
                 }
             }

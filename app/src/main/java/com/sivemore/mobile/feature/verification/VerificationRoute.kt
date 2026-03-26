@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -139,138 +140,146 @@ fun VerificationScreen(
     modifier: Modifier = Modifier,
 ) {
     val session = state.session
-    if (state.isLoading || session == null) {
+    if (state.isLoading && session == null) {
+        BrandedLoadingScreen(modifier = modifier)
+        return
+    }
+    if (session == null) {
         BrandedLoadingScreen(modifier = modifier)
         return
     }
 
-    Column(
+    PullToRefreshBox(
+        isRefreshing = state.isRefreshing,
+        onRefresh = { onAction(VerificationUiAction.Refresh) },
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .testTag("verification_screen"),
     ) {
-        BrandedHeader(showAction = true, onActionClick = {
-            onAction(VerificationUiAction.SessionActionsRequested)
-        })
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 18.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            Text(
-                text = session.vehiclePlate,
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary,
-            )
-            Text(
-                text = "${session.orderNumber} · ${session.clientCompanyName}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                text = state.errorMessage ?: "Evidencias: ${session.evidenceCount} · Actualizado ${session.updatedAtLabel}",
-                style = MaterialTheme.typography.bodySmall,
-                color = if (state.errorMessage == null) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
-            )
-        }
+        Column(modifier = Modifier.fillMaxSize()) {
+            BrandedHeader(showAction = true, onActionClick = {
+                onAction(VerificationUiAction.SessionActionsRequested)
+            })
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 18.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Text(
+                    text = session.vehiclePlate,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = stringResource(R.string.verification_order_company, session.orderNumber, session.clientCompanyName),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = state.errorMessage ?: stringResource(R.string.verification_summary, session.evidenceCount, session.updatedAtLabel),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (state.errorMessage == null) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
+                )
+            }
 
-        LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            items(session.sections, key = { it.id }) { section ->
-                VerificationCard {
-                    Text(
-                        text = section.title,
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    if (!section.description.isNullOrBlank()) {
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                items(session.sections, key = { it.id }) { section ->
+                    VerificationCard {
                         Text(
-                            text = section.description,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            text = section.title,
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
-                    }
-
-                    OutlinedTextField(
-                        value = section.noteValue,
-                        onValueChange = {
-                            onAction(VerificationUiAction.SectionNoteChanged(section.id, it))
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Nota de sección") },
-                    )
-
-                    section.items.forEach { item ->
-                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        if (!section.description.isNullOrBlank()) {
                             Text(
-                                text = item.title + if (item.required) " *" else "",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface,
+                                text = section.description,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
-                            item.options.forEach { option ->
-                                InspectionChoiceRow(
-                                    text = option.label,
-                                    selected = option.id == item.selectedOptionId,
-                                    onClick = {
+                        }
+
+                        OutlinedTextField(
+                            value = section.noteValue,
+                            onValueChange = {
+                                onAction(VerificationUiAction.SectionNoteChanged(section.id, it))
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            label = { Text(stringResource(R.string.verification_section_note)) },
+                        )
+
+                        section.items.forEach { item ->
+                            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                Text(
+                                    text = item.title + if (item.required) " *" else "",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                                item.options.forEach { option ->
+                                    InspectionChoiceRow(
+                                        text = option.label,
+                                        selected = option.id == item.selectedOptionId,
+                                        onClick = {
+                                            onAction(
+                                                VerificationUiAction.QuestionOptionSelected(
+                                                    sectionId = section.id,
+                                                    itemId = item.id,
+                                                    optionId = option.id,
+                                                )
+                                            )
+                                        },
+                                        modifier = Modifier.testTag("item_${item.id}_option_${option.id}"),
+                                    )
+                                }
+                                OutlinedTextField(
+                                    value = item.noteValue,
+                                    onValueChange = {
                                         onAction(
-                                            VerificationUiAction.QuestionOptionSelected(
+                                            VerificationUiAction.QuestionCommentChanged(
                                                 sectionId = section.id,
                                                 itemId = item.id,
-                                                optionId = option.id,
+                                                value = it,
                                             )
                                         )
                                     },
-                                    modifier = Modifier.testTag("item_${item.id}_option_${option.id}"),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    label = { Text(stringResource(R.string.verification_comment)) },
                                 )
                             }
-                            OutlinedTextField(
-                                value = item.noteValue,
-                                onValueChange = {
-                                    onAction(
-                                        VerificationUiAction.QuestionCommentChanged(
-                                            sectionId = section.id,
-                                            itemId = item.id,
-                                            value = it,
-                                        )
-                                    )
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                label = { Text("Comentario") },
-                            )
                         }
-                    }
 
-                    if (section.evidence.isEmpty()) {
-                        Text(
-                            text = "Aún no hay evidencia registrada para esta sección.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    } else {
-                        section.evidence.forEach { evidence ->
-                            EvidenceTile(
-                                evidence = evidence,
-                                onRemove = {
-                                    onAction(VerificationUiAction.RemoveEvidence(evidence.id))
-                                },
+                        if (section.evidence.isEmpty()) {
+                            Text(
+                                text = stringResource(R.string.verification_no_evidence),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
+                        } else {
+                            section.evidence.forEach { evidence ->
+                                EvidenceTile(
+                                    evidence = evidence,
+                                    onRemove = {
+                                        onAction(VerificationUiAction.RemoveEvidence(evidence.id))
+                                    },
+                                )
+                            }
                         }
                     }
                 }
             }
-        }
 
-        BottomActionBar(
-            onAddEvidence = { onAction(VerificationUiAction.AddEvidenceRequested) },
-            onAddComment = { onAction(VerificationUiAction.AddCommentRequested) },
-            onSubmit = { onAction(VerificationUiAction.SubmitRequested) },
-        )
+            BottomActionBar(
+                onAddEvidence = { onAction(VerificationUiAction.AddEvidenceRequested) },
+                onAddComment = { onAction(VerificationUiAction.AddCommentRequested) },
+                onSubmit = { onAction(VerificationUiAction.SubmitRequested) },
+            )
+        }
     }
 
     if (state.showEvidenceDialog) {
@@ -283,7 +292,7 @@ fun VerificationScreen(
             title = { Text(stringResource(R.string.evidence_dialog_title)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("Selecciona la sección destino")
+                    Text(stringResource(R.string.verification_select_section))
                     session.sections.forEach { section ->
                         TextButton(onClick = { selectedSectionId = section.id }) {
                             Text(
@@ -319,23 +328,23 @@ fun VerificationScreen(
     if (state.showCommentDialog) {
         AlertDialog(
             onDismissRequest = { onAction(VerificationUiAction.CommentDialogDismissed) },
-            title = { Text("Comentarios generales") },
+            title = { Text(stringResource(R.string.verification_comments_title)) },
             text = {
                 OutlinedTextField(
                     value = state.commentDraft,
                     onValueChange = { onAction(VerificationUiAction.CommentDraftChanged(it)) },
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Observaciones") },
+                    label = { Text(stringResource(R.string.verification_comments_label)) },
                 )
             },
             confirmButton = {
                 TextButton(onClick = { onAction(VerificationUiAction.CommentSaved) }) {
-                    Text("Guardar")
+                    Text(stringResource(R.string.verification_save))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { onAction(VerificationUiAction.CommentDialogDismissed) }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.dialog_cancel))
                 }
             },
         )
@@ -343,9 +352,9 @@ fun VerificationScreen(
 
     if (state.showSubmitDialog) {
         ConfirmationDialog(
-            title = "Finalizar inspección",
-            text = "Se enviará el borrador actual al backend y desaparecerá de tus asignaciones activas.",
-            confirmLabel = "Finalizar",
+            title = stringResource(R.string.verification_submit_title),
+            text = stringResource(R.string.verification_submit_message),
+            confirmLabel = stringResource(R.string.verification_submit_action),
             onConfirm = { onAction(VerificationUiAction.SubmitConfirmed) },
             onDismiss = { onAction(VerificationUiAction.SubmitDismissed) },
         )
@@ -380,6 +389,7 @@ private fun VerificationScreenPreview() {
         VerificationScreen(
             state = VerificationUiState(
                 isLoading = false,
+                isRefreshing = false,
                 session = VerificationSession(
                     id = "1",
                     orderUnitId = "1",

@@ -5,6 +5,7 @@ data class AuthUiState(
     val password: String = "",
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
+    val diagnosticMessage: String? = null,
 ) {
     val isSubmitEnabled: Boolean
         get() = username.isNotBlank() && password.isNotBlank() && !isLoading

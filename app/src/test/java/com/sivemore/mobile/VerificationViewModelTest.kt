@@ -7,12 +7,16 @@ import com.sivemore.mobile.domain.repository.VerificationRepository
 import com.sivemore.mobile.feature.verification.VerificationEvent
 import com.sivemore.mobile.feature.verification.VerificationUiAction
 import com.sivemore.mobile.feature.verification.VerificationViewModel
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -33,11 +37,11 @@ class VerificationViewModelTest {
         val viewModel = buildViewModel(repository)
         advanceUntilIdle()
 
-        viewModel.onAction(VerificationUiAction.CommentDraftChanged("Observación general"))
+        viewModel.onAction(VerificationUiAction.CommentDraftChanged("Observacion general"))
         viewModel.onAction(VerificationUiAction.CommentSaved)
         advanceUntilIdle()
 
-        assertEquals("Observación general", viewModel.uiState.value.session?.comments)
+        assertEquals("Observacion general", viewModel.uiState.value.session?.comments)
     }
 
     @Test
@@ -64,10 +68,55 @@ class VerificationViewModelTest {
         assertEquals(VerificationEvent.Completed, event.await())
     }
 
-    private class StubVerificationRepository : VerificationRepository {
-        private var session = sampleSession()
+    @Test
+    fun refreshKeepsSessionVisibleWhileReloading() = runTest {
+        val refreshGate = CompletableDeferred<Unit>()
+        val repository = StubVerificationRepository(refreshGate = refreshGate)
+        val viewModel = buildViewModel(repository)
+        advanceUntilIdle()
 
-        override suspend fun loadSession(orderUnitId: String): VerificationSession = session
+        viewModel.onAction(VerificationUiAction.Refresh)
+        runCurrent()
+
+        assertNotNull(viewModel.uiState.value.session)
+        assertTrue(viewModel.uiState.value.isRefreshing)
+        assertTrue(!viewModel.uiState.value.isLoading)
+
+        refreshGate.complete(Unit)
+        advanceUntilIdle()
+
+        assertTrue(!viewModel.uiState.value.isRefreshing)
+    }
+
+    @Test
+    fun refreshFailureKeepsSessionAndShowsError() = runTest {
+        val repository = StubVerificationRepository(failRefresh = true)
+        val viewModel = buildViewModel(repository)
+        advanceUntilIdle()
+
+        viewModel.onAction(VerificationUiAction.Refresh)
+        advanceUntilIdle()
+
+        assertNotNull(viewModel.uiState.value.session)
+        assertEquals("refresh failed", viewModel.uiState.value.errorMessage)
+        assertTrue(!viewModel.uiState.value.isRefreshing)
+    }
+
+    private class StubVerificationRepository(
+        private val refreshGate: CompletableDeferred<Unit>? = null,
+        private val failRefresh: Boolean = false,
+    ) : VerificationRepository {
+        private var session = sampleSession()
+        private var loadCalls = 0
+
+        override suspend fun loadSession(orderUnitId: String): VerificationSession {
+            loadCalls += 1
+            if (loadCalls > 1) {
+                refreshGate?.await()
+                if (failRefresh) error("refresh failed")
+            }
+            return session
+        }
 
         override suspend fun updateQuestionAnswer(orderUnitId: String, sectionId: String, questionId: String, optionId: String): VerificationSession = session
 

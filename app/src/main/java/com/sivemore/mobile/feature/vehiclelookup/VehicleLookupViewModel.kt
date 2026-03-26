@@ -25,13 +25,13 @@ class VehicleLookupViewModel @Inject constructor(
     val events: SharedFlow<VehicleLookupEvent> = _events.asSharedFlow()
 
     init {
-        refresh()
+        refresh(initialLoad = true)
     }
 
     fun onAction(action: VehicleLookupUiAction) {
         when (action) {
-            VehicleLookupUiAction.Refresh,
-            VehicleLookupUiAction.SearchSubmitted -> refresh()
+            VehicleLookupUiAction.Refresh -> refresh()
+            VehicleLookupUiAction.SearchSubmitted -> refresh(initialLoad = uiState.value.vehicles.isEmpty())
             VehicleLookupUiAction.PendingDialogDismissed -> _uiState.update { it.copy(pendingVehicle = null) }
             VehicleLookupUiAction.PendingDialogConfirmed -> continuePendingVehicle()
             is VehicleLookupUiAction.QueryChanged -> _uiState.update { it.copy(query = action.value) }
@@ -39,15 +39,23 @@ class VehicleLookupViewModel @Inject constructor(
         }
     }
 
-    private fun refresh() {
+    private fun refresh(initialLoad: Boolean = false) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            val hasVisibleContent = uiState.value.vehicles.isNotEmpty()
+            _uiState.update {
+                it.copy(
+                    isLoading = initialLoad || !hasVisibleContent,
+                    isRefreshing = !initialLoad && hasVisibleContent,
+                    errorMessage = null,
+                )
+            }
             runCatching {
                 vehicleRepository.loadVehicles(uiState.value.query)
             }.onSuccess { vehicles ->
                 _uiState.update {
                     it.copy(
                         isLoading = false,
+                        isRefreshing = false,
                         vehicles = vehicles,
                     )
                 }
@@ -55,7 +63,8 @@ class VehicleLookupViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        errorMessage = failure.message ?: "No fue posible cargar las órdenes asignadas.",
+                        isRefreshing = false,
+                        errorMessage = failure.message ?: "No fue posible cargar los pedidos asignados.",
                     )
                 }
             }

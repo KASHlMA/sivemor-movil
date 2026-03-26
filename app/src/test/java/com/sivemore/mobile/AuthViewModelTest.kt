@@ -15,6 +15,7 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -76,11 +77,34 @@ class AuthViewModelTest {
         assertFalse(viewModel.uiState.value.isLoading)
     }
 
+    @Test
+    fun submitWithRepositoryFailureShowsInlineError() = runTest {
+        val viewModel = AuthViewModel(
+            authRepository = FailingAuthRepository(
+                message = "Esta aplicacion solo permite acceso a tecnicos.",
+            ),
+        )
+
+        viewModel.onAction(AuthUiAction.UsernameChanged("admin"))
+        viewModel.onAction(AuthUiAction.PasswordChanged("Admin123!"))
+        viewModel.onAction(AuthUiAction.Submit)
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.value.isLoading)
+        assertEquals(
+            "Esta aplicacion solo permite acceso a tecnicos.",
+            viewModel.uiState.value.errorMessage,
+        )
+        assertNull(viewModel.uiState.value.diagnosticMessage)
+    }
+
     private class SuccessAuthRepository(
         private val hasSession: Boolean = false,
     ) : AuthRepository {
         override suspend fun signIn(credentials: AuthCredentials): Result<AuthenticatedUser> =
             Result.success(sampleUser.copy(username = credentials.username))
+
+        override suspend fun probeBackend(): Result<String> = Result.success("Health OK")
 
         override suspend fun signOut() = Unit
 
@@ -93,6 +117,23 @@ class AuthViewModelTest {
         val response = CompletableDeferred<Result<AuthenticatedUser>>()
 
         override suspend fun signIn(credentials: AuthCredentials): Result<AuthenticatedUser> = response.await()
+
+        override suspend fun probeBackend(): Result<String> = Result.success("Health OK")
+
+        override suspend fun signOut() = Unit
+
+        override fun hasActiveSession(): Boolean = false
+
+        override fun currentUser(): AuthenticatedUser? = null
+    }
+
+    private class FailingAuthRepository(
+        private val message: String,
+    ) : AuthRepository {
+        override suspend fun signIn(credentials: AuthCredentials): Result<AuthenticatedUser> =
+            Result.failure(IllegalStateException(message))
+
+        override suspend fun probeBackend(): Result<String> = Result.success("Health OK")
 
         override suspend fun signOut() = Unit
 

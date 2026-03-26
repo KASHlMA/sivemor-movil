@@ -1,5 +1,7 @@
 package com.sivemore.mobile.data.repository
 
+import android.util.Log
+import com.sivemore.mobile.BuildConfig
 import com.sivemore.mobile.data.network.AuthApiService
 import com.sivemore.mobile.data.network.LoginRequestDto
 import com.sivemore.mobile.data.network.LogoutRequestDto
@@ -18,14 +20,33 @@ class RealAuthRepository @Inject constructor(
     private val sessionStore: SessionStore,
     private val errorMapper: MobileErrorMapper,
 ) : AuthRepository {
+    override suspend fun probeBackend(): Result<String> = runCatching {
+        Log.d(TAG, "Probing backend health at ${BuildConfig.API_BASE_URL} -> /actuator/health")
+        val response = authApiService.healthCheck()
+        "Health OK: $response"
+    }.fold(
+        onSuccess = {
+            Log.d(TAG, it)
+            Result.success(it)
+        },
+        onFailure = { failure ->
+            logFailure("healthCheck", failure)
+            Result.failure(IllegalStateException(errorMapper.toMessage(failure)))
+        },
+    )
+
     override suspend fun signIn(credentials: AuthCredentials): Result<AuthenticatedUser> = runCatching {
+        Log.d(
+            TAG,
+            "Attempting login via ${BuildConfig.API_BASE_URL}auth/login with username=${credentials.username}",
+        )
         val response = authApiService.login(
             LoginRequestDto(
                 username = credentials.username,
                 password = credentials.password,
             )
         )
-        val user = response.user.toDomain()
+        val user = response.user.toDomain().requireTechnicianAccess()
         sessionStore.saveSession(
             accessToken = response.accessToken,
             refreshToken = response.refreshToken,
@@ -34,7 +55,10 @@ class RealAuthRepository @Inject constructor(
         user
     }.fold(
         onSuccess = { Result.success(it) },
-        onFailure = { Result.failure(IllegalStateException(errorMapper.toMessage(it))) },
+        onFailure = {
+            logFailure("login", it)
+            Result.failure(IllegalStateException(errorMapper.toMessage(it)))
+        },
     )
 
     override suspend fun signOut() {
@@ -44,7 +68,37 @@ class RealAuthRepository @Inject constructor(
         sessionStore.clear()
     }
 
-    override fun hasActiveSession(): Boolean = sessionStore.hasActiveSession()
+    override fun hasActiveSession(): Boolean {
+        if (!sessionStore.hasActiveSession()) return false
+        val user = sessionStore.currentUser()
+        if (user?.role != TECHNICIAN_ROLE) {
+            sessionStore.clear()
+            return false
+        }
+        return true
+    }
 
-    override fun currentUser(): AuthenticatedUser? = sessionStore.currentUser()
+    override fun currentUser(): AuthenticatedUser? =
+        sessionStore.currentUser()?.takeIf { it.role == TECHNICIAN_ROLE }
+
+    private fun logFailure(action: String, throwable: Throwable) {
+        Log.e(
+            TAG,
+            "Auth action '$action' failed. type=${throwable::class.java.simpleName} message=${throwable.message}",
+            throwable,
+        )
+    }
+
+    private fun AuthenticatedUser.requireTechnicianAccess(): AuthenticatedUser {
+        if (role == TECHNICIAN_ROLE) return this
+        sessionStore.clear()
+        throw IllegalStateException(
+            "Esta aplicacion solo permite acceso a tecnicos. Inicia sesion con tu usuario tecnico asignado.",
+        )
+    }
+
+    private companion object {
+        private const val TAG = "RealAuthRepository"
+        private const val TECHNICIAN_ROLE = "TECHNICIAN"
+    }
 }

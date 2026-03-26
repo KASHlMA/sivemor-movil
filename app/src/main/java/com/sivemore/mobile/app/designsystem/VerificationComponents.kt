@@ -9,8 +9,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.sivemore.mobile.R
@@ -95,12 +96,12 @@ fun BrandedLoadingScreen(
                     .height(118.dp),
             )
             Text(
-                text = "SIVEMOR",
+                text = stringResource(R.string.brand_name),
                 style = MaterialTheme.typography.headlineLarge,
                 color = Ink,
             )
             Text(
-                text = "Sistema de Verificación de Morelos",
+                text = stringResource(R.string.brand_subtitle),
                 style = MaterialTheme.typography.bodyLarge,
                 color = Ink,
                 textAlign = TextAlign.Center,
@@ -149,12 +150,12 @@ fun BrandedHeader(
                 )
                 Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                     Text(
-                        text = "SIVEMOR",
+                        text = stringResource(R.string.brand_name),
                         style = MaterialTheme.typography.headlineMedium,
                         color = Snow,
                     )
                     Text(
-                        text = "Sistema de Verificación de Morelos",
+                        text = stringResource(R.string.brand_subtitle),
                         style = MaterialTheme.typography.bodySmall,
                         color = Snow,
                     )
@@ -220,8 +221,8 @@ fun VehicleStatusChip(
     modifier: Modifier = Modifier,
 ) {
     val color = when (status) {
-        VehicleStatus.Assigned -> Pending
-        VehicleStatus.InProgress -> Approved
+        VehicleStatus.Assigned -> Approved
+        VehicleStatus.InProgress -> Rejected
         VehicleStatus.Paused -> Rejected
     }
     Box(
@@ -292,13 +293,13 @@ fun SearchField(
         shape = RoundedCornerShape(6.dp),
         label = {
             Text(
-                text = "Buscar",
+                text = stringResource(R.string.search_label),
                 style = MaterialTheme.typography.bodySmall,
             )
         },
         placeholder = {
             Text(
-                text = "Placas, VIN o número de vehículo",
+                text = stringResource(R.string.search_placeholder),
                 style = MaterialTheme.typography.bodySmall,
             )
         },
@@ -326,17 +327,17 @@ fun VehicleResultCard(
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
-                    text = "Placas: $plates",
+                    text = stringResource(R.string.vehicle_card_plate, plates),
                     style = MaterialTheme.typography.titleMedium,
                     color = Ink,
                 )
                 Text(
-                    text = "Número de serie: $serialNumber",
+                    text = stringResource(R.string.vehicle_card_order_number, serialNumber),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MutedText,
                 )
                 Text(
-                    text = "Número de vehículo: $vehicleNumber",
+                    text = stringResource(R.string.vehicle_card_unit_number, vehicleNumber),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MutedText,
                 )
@@ -350,7 +351,7 @@ fun VehicleResultCard(
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
-                    text = "Fecha de ingreso",
+                    text = stringResource(R.string.vehicle_card_admission_date),
                     style = MaterialTheme.typography.labelMedium,
                     color = MutedText,
                 )
@@ -362,12 +363,12 @@ fun VehicleResultCard(
             }
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
-                    text = "Finalizado",
+                    text = stringResource(R.string.vehicle_card_completed_date),
                     style = MaterialTheme.typography.labelMedium,
                     color = MutedText,
                 )
                 Text(
-                    text = completedDate ?: "Pendiente",
+                    text = completedDate ?: stringResource(R.string.vehicle_card_pending),
                     style = MaterialTheme.typography.bodyMedium,
                     color = Ink,
                 )
@@ -474,19 +475,19 @@ fun BottomActionBar(
         ) {
             ActionIconButton(
                 iconRes = R.drawable.ic_bottom_evidence,
-                label = "Evidencia",
+                label = stringResource(R.string.bottom_action_evidence),
                 onClick = onAddEvidence,
                 testTag = "action_add_evidence",
             )
             ActionIconButton(
                 iconRes = R.drawable.ic_bottom_comment,
-                label = "Comentario",
+                label = stringResource(R.string.bottom_action_comment),
                 onClick = onAddComment,
                 testTag = "action_add_comment",
             )
             ActionIconButton(
                 iconRes = R.drawable.ic_bottom_submit,
-                label = "Finalizar",
+                label = stringResource(R.string.bottom_action_submit),
                 onClick = onSubmit,
                 testTag = "action_submit_verification",
             )
@@ -528,7 +529,7 @@ fun EvidenceTile(
                 color = MutedText,
             )
             TextButton(onClick = onRemove) {
-                Text("Quitar")
+                Text(stringResource(R.string.evidence_remove))
             }
         }
     }
@@ -568,7 +569,7 @@ fun ConfirmationDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar", color = MutedText)
+                Text(stringResource(R.string.dialog_cancel), color = MutedText)
             }
         },
     )

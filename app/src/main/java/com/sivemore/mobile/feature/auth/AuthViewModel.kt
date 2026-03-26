@@ -36,11 +36,12 @@ class AuthViewModel @Inject constructor(
     fun onAction(action: AuthUiAction) {
         when (action) {
             is AuthUiAction.UsernameChanged -> _uiState.update {
-                it.copy(username = action.value, errorMessage = null)
+                it.copy(username = action.value, errorMessage = null, diagnosticMessage = null)
             }
             is AuthUiAction.PasswordChanged -> _uiState.update {
-                it.copy(password = action.value, errorMessage = null)
+                it.copy(password = action.value, errorMessage = null, diagnosticMessage = null)
             }
+            AuthUiAction.ProbeBackend -> probeBackend()
             AuthUiAction.Submit -> signIn()
         }
     }
@@ -55,7 +56,7 @@ class AuthViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            _uiState.update { it.copy(isLoading = true, errorMessage = null, diagnosticMessage = null) }
             authRepository.signIn(
                 AuthCredentials(
                     username = state.username.trim(),
@@ -72,6 +73,23 @@ class AuthViewModel @Inject constructor(
                     )
                 }
             }
+        }
+    }
+
+    private fun probeBackend() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, errorMessage = null, diagnosticMessage = null) }
+            authRepository.probeBackend()
+                .onSuccess { message ->
+                    _uiState.update {
+                        it.copy(isLoading = false, diagnosticMessage = message)
+                    }
+                }
+                .onFailure { failure ->
+                    _uiState.update {
+                        it.copy(isLoading = false, errorMessage = failure.message)
+                    }
+                }
         }
     }
 }

@@ -5,10 +5,12 @@ import com.sivemore.mobile.domain.repository.VehicleRepository
 import com.sivemore.mobile.feature.vehiclelookup.VehicleLookupEvent
 import com.sivemore.mobile.feature.vehiclelookup.VehicleLookupUiAction
 import com.sivemore.mobile.feature.vehiclelookup.VehicleLookupViewModel
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -60,12 +62,56 @@ class VehicleLookupViewModelTest {
         assertEquals(VehicleLookupEvent.OpenVerification("1"), event.await())
     }
 
+    @Test
+    fun refreshKeepsVehiclesVisibleWhileReloading() = runTest {
+        val refreshGate = CompletableDeferred<Unit>()
+        val repository = StubVehicleRepository(refreshGate = refreshGate)
+        val viewModel = VehicleLookupViewModel(vehicleRepository = repository)
+        advanceUntilIdle()
+
+        viewModel.onAction(VehicleLookupUiAction.Refresh)
+        runCurrent()
+
+        assertTrue(viewModel.uiState.value.vehicles.isNotEmpty())
+        assertTrue(viewModel.uiState.value.isRefreshing)
+        assertTrue(!viewModel.uiState.value.isLoading)
+
+        refreshGate.complete(Unit)
+        advanceUntilIdle()
+
+        assertTrue(!viewModel.uiState.value.isRefreshing)
+    }
+
+    @Test
+    fun refreshFailureKeepsPreviousVehiclesAndShowsError() = runTest {
+        val repository = StubVehicleRepository(failRefresh = true)
+        val viewModel = VehicleLookupViewModel(vehicleRepository = repository)
+        advanceUntilIdle()
+
+        viewModel.onAction(VehicleLookupUiAction.Refresh)
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.vehicles.isNotEmpty())
+        assertEquals("refresh failed", viewModel.uiState.value.errorMessage)
+        assertTrue(!viewModel.uiState.value.isRefreshing)
+    }
+
     private class StubVehicleRepository(
         private val hasPendingVerification: Boolean = false,
+        private val refreshGate: CompletableDeferred<Unit>? = null,
+        private val failRefresh: Boolean = false,
     ) : VehicleRepository {
-        override suspend fun loadVehicles(query: String): List<VehicleSummary> =
-            listOf(sampleVehicle(hasPendingVerification = hasPendingVerification))
+        private var loadCalls = 0
+
+        override suspend fun loadVehicles(query: String): List<VehicleSummary> {
+            loadCalls += 1
+            if (loadCalls > 1) {
+                refreshGate?.await()
+                if (failRefresh) error("refresh failed")
+            }
+            return listOf(sampleVehicle(hasPendingVerification = hasPendingVerification))
                 .filter { query.isBlank() || it.plates.contains(query, ignoreCase = true) }
+        }
 
         override suspend fun loadVehicle(vehicleId: String): VehicleSummary? =
             sampleVehicle(id = vehicleId, hasPendingVerification = hasPendingVerification)

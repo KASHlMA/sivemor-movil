@@ -9,7 +9,9 @@ import androidx.navigation.navArgument
 import androidx.navigation.NavType
 import com.sivemore.mobile.feature.auth.AuthRoute
 import com.sivemore.mobile.feature.sessionactions.SessionActionsRoute
+import com.sivemore.mobile.feature.vehiclemenu.VehicleMenuRoute
 import com.sivemore.mobile.feature.vehiclelookup.VehicleLookupRoute
+import com.sivemore.mobile.feature.vehicleregistration.VehicleRegistrationScreen
 import com.sivemore.mobile.feature.verification.VerificationRoute
 
 @Composable
@@ -25,8 +27,28 @@ fun SivemoreNavHost(
         composable(AppDestination.Auth.route) {
             AuthRoute(
                 onAuthenticated = {
-                    navController.navigate(AppDestination.VehicleLookup.route) {
+                    navController.navigate(AppDestination.VehicleMenu.route) {
                         popUpTo(AppDestination.Auth.route) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
+            )
+        }
+        composable(AppDestination.VehicleMenu.route) {
+            VehicleMenuRoute(
+                onOpenVehicleVisualization = {
+                    navController.navigate(AppDestination.VehicleLookup.route) {
+                        launchSingleTop = true
+                    }
+                },
+                onOpenVehicleRegistration = {
+                    navController.navigate(AppDestination.VehicleRegistration.route) {
+                        launchSingleTop = true
+                    }
+                },
+                onSignedOut = {
+                    navController.navigate(AppDestination.Auth.route) {
+                        popUpTo(navController.graph.id) { inclusive = true }
                         launchSingleTop = true
                     }
                 },
@@ -38,6 +60,9 @@ fun SivemoreNavHost(
                     navController.navigate(AppDestination.Verification.createRoute(vehicleId))
                 },
             )
+        }
+        composable(AppDestination.VehicleRegistration.route) {
+            VehicleRegistrationScreen()
         }
         composable(
             route = AppDestination.Verification.route,

@@ -4,6 +4,8 @@ import com.sivemore.mobile.domain.model.EvidenceUpload
 import com.sivemore.mobile.domain.model.VerificationSession
 
 sealed interface VerificationUiAction {
+    data object Refresh : VerificationUiAction
+
     data class QuestionOptionSelected(
         val sectionId: String,
         val itemId: String,
@@ -41,6 +43,7 @@ sealed interface VerificationUiAction {
 
 data class VerificationUiState(
     val isLoading: Boolean = true,
+    val isRefreshing: Boolean = false,
     val session: VerificationSession? = null,
     val showEvidenceDialog: Boolean = false,
     val showCommentDialog: Boolean = false,

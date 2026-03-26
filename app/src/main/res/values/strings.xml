@@ -1,18 +1,80 @@
 <resources>
     <string name="app_name">Sivemore</string>
-    <string name="auth_title">Iniciar sesión</string>
-    <string name="auth_subtitle">Sistema de Verificación de Morelos</string>
+
+    <string name="brand_name">SIVEMOR</string>
+    <string name="brand_subtitle">Sistema de Verificacion de Morelos</string>
+
+    <string name="auth_title">Iniciar sesion</string>
+    <string name="auth_subtitle">Sistema de Verificacion de Morelos</string>
     <string name="auth_username_label">Usuario</string>
-    <string name="auth_password_label">Contraseña</string>
-    <string name="auth_primary_cta">Iniciar sesión</string>
-    <string name="auth_helper">Usa tu usuario técnico asignado para conectarte al backend.</string>
+    <string name="auth_password_label">Contrasena</string>
+    <string name="auth_primary_cta">Iniciar sesion</string>
+    <string name="auth_helper">Usa tu usuario tecnico asignado para conectarte al backend.</string>
+    <string name="auth_probe_backend">Probar backend local</string>
+
+    <string name="search_label">Buscar</string>
+    <string name="search_placeholder">Numero de vehiculo, placas o numero de serie</string>
+
+    <string name="vehicle_menu_title">Menu</string>
+    <string name="vehicle_menu_visualization">Visualizacion de vehiculos</string>
+    <string name="vehicle_menu_registration">Registrar unidades</string>
+
+    <string name="vehicle_search_title">Visualizacion de vehiculos</string>
+    <string name="vehicle_search_description">Consulta los vehiculos asignados al tecnico y abre la verificacion correspondiente.</string>
     <string name="vehicle_search_action">Buscar</string>
-    <string name="pending_dialog_title">Tienes una inspección pendiente</string>
-    <string name="pending_dialog_message">¿Deseas retomarla ahora?</string>
-    <string name="pending_dialog_continue">Continuar</string>
-    <string name="pending_dialog_cancel">Cancelar</string>
+    <string name="vehicle_empty_title">Sin vehiculos asignados</string>
+    <string name="vehicle_empty_description">No hay vehiculos asignados para este tecnico en este momento.</string>
+    <string name="vehicle_pending_title">Tienes una inspeccion pendiente</string>
+    <string name="vehicle_pending_message">Deseas retomarla ahora?</string>
+    <string name="vehicle_pending_continue">Continuar</string>
+    <string name="vehicle_load_error">No fue posible cargar la visualizacion de vehiculos.</string>
+
+    <string name="vehicle_card_plate">Placas: %1$s</string>
+    <string name="vehicle_card_order_number">Numero de serie: %1$s</string>
+    <string name="vehicle_card_unit_number">Numero de vehiculo: %1$s</string>
+    <string name="vehicle_card_admission_date">Fecha de ingreso</string>
+    <string name="vehicle_card_completed_date">Finalizado</string>
+    <string name="vehicle_card_pending">Pendiente</string>
+
+    <string name="verification_summary">Evidencias: %1$d · Actualizado %2$s</string>
+    <string name="verification_order_company">%1$s · %2$s</string>
+    <string name="verification_section_note">Nota de seccion</string>
+    <string name="verification_comment">Comentario</string>
+    <string name="verification_no_evidence">Aun no hay evidencia registrada para esta seccion.</string>
+    <string name="verification_select_section">Selecciona la seccion destino</string>
+    <string name="verification_comments_title">Comentarios generales</string>
+    <string name="verification_comments_label">Observaciones</string>
+    <string name="verification_save">Guardar</string>
+    <string name="verification_submit_title">Finalizar inspeccion</string>
+    <string name="verification_submit_message">Se enviara el borrador actual al backend y desaparecera de tus pedidos activos.</string>
+    <string name="verification_submit_action">Finalizar</string>
+    <string name="verification_load_error">No fue posible cargar la inspeccion.</string>
+    <string name="verification_update_error">No fue posible actualizar la inspeccion.</string>
+    <string name="verification_submit_error">No fue posible enviar la inspeccion.</string>
+
     <string name="evidence_dialog_title">Agregar evidencia</string>
     <string name="evidence_dialog_camera">Tomar foto</string>
     <string name="evidence_dialog_gallery">Seleccionar evidencia</string>
+    <string name="evidence_remove">Quitar</string>
+
+    <string name="bottom_action_evidence">Evidencia</string>
+    <string name="bottom_action_comment">Comentario</string>
+    <string name="bottom_action_submit">Finalizar</string>
+
+    <string name="session_actions_title">Acciones de sesion</string>
+    <string name="session_actions_unit">Unidad %1$s</string>
+    <string name="session_actions_pause">Pausar inspeccion</string>
+    <string name="session_actions_pause_message">La inspeccion permanecera disponible para retomarla mas tarde.</string>
+    <string name="session_actions_pause_confirm">Pausar</string>
+    <string name="session_actions_abandon">Abandonar borrador</string>
+    <string name="session_actions_abandon_message">Se archivara el borrador actual y deberas iniciar una nueva inspeccion si vuelves a entrar.</string>
+    <string name="session_actions_abandon_confirm">Abandonar</string>
+    <string name="session_actions_sign_out">Cerrar sesion</string>
+    <string name="session_actions_sign_out_message">Se cerrara tu sesion actual en el dispositivo.</string>
+    <string name="session_actions_sign_out_confirm">Salir</string>
+
+    <string name="registration_title">Registro de unidades</string>
+    <string name="registration_subtitle">Proximamente podras registrar unidades desde esta pantalla.</string>
+
     <string name="dialog_cancel">Cancelar</string>
 </resources>

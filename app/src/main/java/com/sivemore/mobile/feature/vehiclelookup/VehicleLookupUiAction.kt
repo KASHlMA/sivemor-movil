@@ -13,6 +13,7 @@ sealed interface VehicleLookupUiAction {
 
 data class VehicleLookupUiState(
     val isLoading: Boolean = true,
+    val isRefreshing: Boolean = false,
     val query: String = "",
     val vehicles: List<VehicleSummary> = emptyList(),
     val pendingVehicle: VehicleSummary? = null,

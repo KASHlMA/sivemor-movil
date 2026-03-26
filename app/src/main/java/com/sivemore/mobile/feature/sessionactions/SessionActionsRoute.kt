@@ -12,9 +12,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sivemore.mobile.R
 import com.sivemore.mobile.app.designsystem.BrandedHeader
 import com.sivemore.mobile.app.designsystem.BrandedLoadingScreen
 import com.sivemore.mobile.app.designsystem.ConfirmationDialog
@@ -70,12 +72,12 @@ fun SessionActionsScreen(
             modifier = Modifier.padding(24.dp),
         ) {
             Text(
-                text = "Acciones de sesión",
+                text = stringResource(R.string.session_actions_title),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
-                text = "Unidad ${state.vehicleLabel}",
+                text = stringResource(R.string.session_actions_unit, state.vehicleLabel),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -83,28 +85,28 @@ fun SessionActionsScreen(
                 onClick = { onAction(SessionActionsUiAction.PauseTapped) },
                 modifier = Modifier.testTag("pause_session_button"),
             ) {
-                Text("Pausar inspección")
+                Text(stringResource(R.string.session_actions_pause))
             }
             OutlinedButton(
                 onClick = { onAction(SessionActionsUiAction.AbandonTapped) },
                 modifier = Modifier.testTag("abandon_session_button"),
             ) {
-                Text("Abandonar borrador")
+                Text(stringResource(R.string.session_actions_abandon))
             }
             OutlinedButton(
                 onClick = { onAction(SessionActionsUiAction.SignOutTapped) },
                 modifier = Modifier.testTag("signout_button"),
             ) {
-                Text("Cerrar sesión")
+                Text(stringResource(R.string.session_actions_sign_out))
             }
         }
     }
 
     if (state.showPauseDialog) {
         ConfirmationDialog(
-            title = "Pausar inspección",
-            text = "La evaluación permanecerá disponible para retomarla más tarde.",
-            confirmLabel = "Pausar",
+            title = stringResource(R.string.session_actions_pause),
+            text = stringResource(R.string.session_actions_pause_message),
+            confirmLabel = stringResource(R.string.session_actions_pause_confirm),
             onConfirm = { onAction(SessionActionsUiAction.ConfirmPause) },
             onDismiss = { onAction(SessionActionsUiAction.DismissDialogs) },
             modifier = Modifier.testTag("pause_dialog"),
@@ -113,9 +115,9 @@ fun SessionActionsScreen(
 
     if (state.showAbandonDialog) {
         ConfirmationDialog(
-            title = "Abandonar borrador",
-            text = "Se archivará el borrador actual y deberás iniciar una nueva inspección si vuelves a entrar.",
-            confirmLabel = "Abandonar",
+            title = stringResource(R.string.session_actions_abandon),
+            text = stringResource(R.string.session_actions_abandon_message),
+            confirmLabel = stringResource(R.string.session_actions_abandon_confirm),
             onConfirm = { onAction(SessionActionsUiAction.ConfirmAbandon) },
             onDismiss = { onAction(SessionActionsUiAction.DismissDialogs) },
             modifier = Modifier.testTag("abandon_dialog"),
@@ -124,9 +126,9 @@ fun SessionActionsScreen(
 
     if (state.showSignOutDialog) {
         ConfirmationDialog(
-            title = "Cerrar sesión",
-            text = "Se cerrará tu sesión actual en el dispositivo.",
-            confirmLabel = "Salir",
+            title = stringResource(R.string.session_actions_sign_out),
+            text = stringResource(R.string.session_actions_sign_out_message),
+            confirmLabel = stringResource(R.string.session_actions_sign_out_confirm),
             onConfirm = { onAction(SessionActionsUiAction.ConfirmSignOut) },
             onDismiss = { onAction(SessionActionsUiAction.DismissDialogs) },
             modifier = Modifier.testTag("signout_dialog"),

@@ -70,6 +70,7 @@ class SessionActionsViewModelTest {
         },
         authRepository = object : AuthRepository {
             override suspend fun signIn(credentials: AuthCredentials): Result<AuthenticatedUser> = Result.success(sampleUser)
+            override suspend fun probeBackend(): Result<String> = Result.success("Health OK")
             override suspend fun signOut() = Unit
             override fun hasActiveSession(): Boolean = true
             override fun currentUser(): AuthenticatedUser? = sampleUser

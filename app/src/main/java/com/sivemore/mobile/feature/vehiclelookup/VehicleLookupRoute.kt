@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -64,77 +65,81 @@ fun VehicleLookupScreen(
 ) {
     val spacing = SivemoreThemeTokens.spacing
 
-    if (state.isLoading) {
+    if (state.isLoading && state.vehicles.isEmpty()) {
         BrandedLoadingScreen(modifier = modifier)
         return
     }
 
-    Column(
+    PullToRefreshBox(
+        isRefreshing = state.isRefreshing,
+        onRefresh = { onAction(VehicleLookupUiAction.Refresh) },
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .testTag("vehicle_lookup_screen"),
     ) {
-        BrandedHeader()
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 18.dp),
-            verticalArrangement = Arrangement.spacedBy(spacing.md),
-        ) {
-            Text(
-                text = "Órdenes asignadas",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-                text = state.errorMessage ?: "Busca por placa, orden o cliente para abrir o retomar un borrador.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (state.errorMessage == null) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+        Column(modifier = Modifier.fillMaxSize()) {
+            BrandedHeader()
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 18.dp),
+                verticalArrangement = Arrangement.spacedBy(spacing.md),
             ) {
-                SearchField(
-                    value = state.query,
-                    onValueChange = { onAction(VehicleLookupUiAction.QueryChanged(it)) },
-                    modifier = Modifier.weight(1f),
-                    testTag = "vehicle_search",
+                Text(
+                    text = stringResource(R.string.vehicle_search_title),
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
-                Button(
-                    onClick = { onAction(VehicleLookupUiAction.SearchSubmitted) },
-                    modifier = Modifier.testTag("vehicle_search_button"),
+                Text(
+                    text = state.errorMessage ?: stringResource(R.string.vehicle_search_description),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (state.errorMessage == null) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(spacing.sm),
                 ) {
-                    Text(stringResource(R.string.vehicle_search_action))
+                    SearchField(
+                        value = state.query,
+                        onValueChange = { onAction(VehicleLookupUiAction.QueryChanged(it)) },
+                        modifier = Modifier.weight(1f),
+                        testTag = "vehicle_search",
+                    )
+                    Button(
+                        onClick = { onAction(VehicleLookupUiAction.SearchSubmitted) },
+                        modifier = Modifier.testTag("vehicle_search_button"),
+                    ) {
+                        Text(stringResource(R.string.vehicle_search_action))
+                    }
                 }
             }
-        }
 
-        if (state.vehicles.isEmpty()) {
-            EmptyStateCard(
-                title = "Sin asignaciones",
-                description = "No hay unidades asignadas para este técnico en este momento.",
-                modifier = Modifier.padding(horizontal = 24.dp),
-            )
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 23.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                items(state.vehicles, key = { it.id }) { vehicle ->
-                    VehicleResultCard(
-                        plates = vehicle.plates,
-                        serialNumber = vehicle.serialNumber,
-                        vehicleNumber = vehicle.vehicleNumber,
-                        admissionDate = vehicle.admissionDate,
-                        completedDate = vehicle.completedDate,
-                        status = vehicle.status,
-                        onClick = { onAction(VehicleLookupUiAction.VehicleTapped(vehicle.id)) },
-                        modifier = Modifier.testTag("vehicle_card_${vehicle.id}"),
-                    )
+            if (state.vehicles.isEmpty()) {
+                EmptyStateCard(
+                    title = stringResource(R.string.vehicle_empty_title),
+                    description = stringResource(R.string.vehicle_empty_description),
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 23.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    items(state.vehicles, key = { it.id }) { vehicle ->
+                        VehicleResultCard(
+                            plates = vehicle.plates,
+                            serialNumber = vehicle.serialNumber,
+                            vehicleNumber = vehicle.vehicleNumber,
+                            admissionDate = vehicle.admissionDate,
+                            completedDate = vehicle.completedDate,
+                            status = vehicle.status,
+                            onClick = { onAction(VehicleLookupUiAction.VehicleTapped(vehicle.id)) },
+                            modifier = Modifier.testTag("vehicle_card_${vehicle.id}"),
+                        )
+                    }
                 }
             }
         }
@@ -143,9 +148,9 @@ fun VehicleLookupScreen(
     val pendingVehicle = state.pendingVehicle
     if (pendingVehicle != null) {
         ConfirmationDialog(
-            title = stringResource(R.string.pending_dialog_title),
-            text = stringResource(R.string.pending_dialog_message),
-            confirmLabel = stringResource(R.string.pending_dialog_continue),
+            title = stringResource(R.string.vehicle_pending_title),
+            text = stringResource(R.string.vehicle_pending_message),
+            confirmLabel = stringResource(R.string.vehicle_pending_continue),
             onConfirm = { onAction(VehicleLookupUiAction.PendingDialogConfirmed) },
             onDismiss = { onAction(VehicleLookupUiAction.PendingDialogDismissed) },
             modifier = Modifier.testTag("pending_dialog"),
@@ -160,6 +165,7 @@ private fun VehicleLookupScreenPreview() {
         VehicleLookupScreen(
             state = VehicleLookupUiState(
                 isLoading = false,
+                isRefreshing = false,
                 vehicles = listOf(
                     com.sivemore.mobile.domain.model.VehicleSummary(
                         id = "1",

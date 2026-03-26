@@ -1,9 +1,9 @@
 package com.sivemore.mobile.domain.model
 
 enum class VehicleStatus(val label: String) {
-    Assigned("Asignada"),
-    InProgress("En progreso"),
-    Paused("Pausada"),
+    Assigned("Aceptado"),
+    InProgress("Reprobado"),
+    Paused("Reprobado"),
 }
 
 enum class VerificationSessionStatus {

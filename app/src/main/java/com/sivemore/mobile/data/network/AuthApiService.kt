@@ -1,9 +1,13 @@
 package com.sivemore.mobile.data.network
 
+import retrofit2.http.GET
 import retrofit2.http.Body
 import retrofit2.http.POST
 
 interface AuthApiService {
+    @GET("/actuator/health")
+    suspend fun healthCheck(): Map<String, Any>
+
     @POST("auth/login")
     suspend fun login(@Body request: LoginRequestDto): AuthResponseDto
 

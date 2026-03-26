@@ -1,5 +1,6 @@
 package com.sivemore.mobile.app.di
 
+import android.util.Log
 import com.sivemore.mobile.BuildConfig
 import com.sivemore.mobile.data.network.AuthApiService
 import com.sivemore.mobile.data.network.AuthInterceptor
@@ -13,9 +14,11 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import okhttp3.OkHttpClient
+import okhttp3.Interceptor
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import java.util.concurrent.TimeUnit
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -30,7 +33,7 @@ object NetworkModule {
     @Singleton
     fun provideLoggingInterceptor(): HttpLoggingInterceptor = HttpLoggingInterceptor().apply {
         level = if (BuildConfig.DEBUG) {
-            HttpLoggingInterceptor.Level.BASIC
+            HttpLoggingInterceptor.Level.BODY
         } else {
             HttpLoggingInterceptor.Level.NONE
         }
@@ -38,10 +41,25 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    fun provideRequestTraceInterceptor(): Interceptor = Interceptor { chain ->
+        val request = chain.request()
+        if (BuildConfig.DEBUG) {
+            Log.d("NetworkTrace", "Request ${request.method} ${request.url}")
+        }
+        chain.proceed(request)
+    }
+
+    @Provides
+    @Singleton
     @AuthClient
     fun provideAuthOkHttpClient(
         loggingInterceptor: HttpLoggingInterceptor,
+        requestTraceInterceptor: Interceptor,
     ): OkHttpClient = OkHttpClient.Builder()
+        .connectTimeout(5, TimeUnit.SECONDS)
+        .readTimeout(10, TimeUnit.SECONDS)
+        .writeTimeout(10, TimeUnit.SECONDS)
+        .addInterceptor(requestTraceInterceptor)
         .addInterceptor(loggingInterceptor)
         .build()
 
@@ -52,7 +70,12 @@ object NetworkModule {
         authInterceptor: AuthInterceptor,
         tokenAuthenticator: TokenAuthenticator,
         loggingInterceptor: HttpLoggingInterceptor,
+        requestTraceInterceptor: Interceptor,
     ): OkHttpClient = OkHttpClient.Builder()
+        .connectTimeout(5, TimeUnit.SECONDS)
+        .readTimeout(10, TimeUnit.SECONDS)
+        .writeTimeout(10, TimeUnit.SECONDS)
+        .addInterceptor(requestTraceInterceptor)
         .addInterceptor(authInterceptor)
         .authenticator(tokenAuthenticator)
         .addInterceptor(loggingInterceptor)
@@ -86,7 +109,12 @@ object NetworkModule {
     @Singleton
     fun provideAuthApiService(
         @AuthRetrofit retrofit: Retrofit,
-    ): AuthApiService = retrofit.create(AuthApiService::class.java)
+    ): AuthApiService {
+        if (BuildConfig.DEBUG) {
+            Log.d("NetworkModule", "AuthApiService baseUrl=${BuildConfig.API_BASE_URL}")
+        }
+        return retrofit.create(AuthApiService::class.java)
+    }
 
     @Provides
     @Singleton
