@@ -35,15 +35,25 @@
     <string name="vehicle_card_admission_date">Fecha de ingreso</string>
     <string name="vehicle_card_completed_date">Finalizado</string>
     <string name="vehicle_card_pending">Pendiente</string>
+    <string name="luces_next_button">Siguiente</string>
+    <string name="inspection_next_section_title">Siguiente seccion</string>
+    <string name="inspection_next_section_message">La siguiente seccion del formulario se implementara en una iteracion posterior. La seccion Luces ya quedo completa y lista para integrarse al flujo total.</string>
 
     <string name="verification_summary">Evidencias: %1$d · Actualizado %2$s</string>
     <string name="verification_order_company">%1$s · %2$s</string>
+    <string name="verification_section_progress">Seccion %1$d de %2$d: %3$s</string>
+    <string name="verification_next_section">Siguiente</string>
     <string name="verification_section_note">Nota de seccion</string>
     <string name="verification_comment">Comentario</string>
     <string name="verification_no_evidence">Aun no hay evidencia registrada para esta seccion.</string>
     <string name="verification_select_section">Selecciona la seccion destino</string>
     <string name="verification_comments_title">Comentarios generales</string>
     <string name="verification_comments_label">Observaciones</string>
+    <string name="verification_comments_hint">Agrega un comentario general de la verificacion</string>
+    <string name="verification_photos_empty">Todavia no hay fotos para la seccion actual.</string>
+    <string name="verification_pause_confirmation">¿Está seguro que desea pausar la verificación?</string>
+    <string name="verification_pause_exit">Salir</string>
+    <string name="verification_pause_cancel">Cancelar</string>
     <string name="verification_save">Guardar</string>
     <string name="verification_submit_title">Finalizar inspeccion</string>
     <string name="verification_submit_message">Se enviara el borrador actual al backend y desaparecera de tus pedidos activos.</string>
@@ -59,6 +69,7 @@
 
     <string name="bottom_action_evidence">Evidencia</string>
     <string name="bottom_action_comment">Comentario</string>
+    <string name="bottom_action_pause">Pausar verificacion</string>
     <string name="bottom_action_submit">Finalizar</string>
 
     <string name="session_actions_title">Acciones de sesion</string>

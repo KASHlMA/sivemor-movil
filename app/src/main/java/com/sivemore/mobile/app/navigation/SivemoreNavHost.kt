@@ -69,11 +69,17 @@ fun SivemoreNavHost(
             arguments = listOf(navArgument("vehicleId") { type = NavType.StringType }),
         ) {
             VerificationRoute(
-                onOpenSessionActions = { vehicleId ->
-                    navController.navigate(AppDestination.SessionActions.createRoute(vehicleId))
+                onBackToLookup = {
+                    navController.popBackStack(
+                        route = AppDestination.VehicleLookup.route,
+                        inclusive = false,
+                    )
                 },
-                onCompleted = {
-                    navController.popBackStack()
+                onSignedOut = {
+                    navController.navigate(AppDestination.Auth.route) {
+                        popUpTo(navController.graph.id) { inclusive = true }
+                        launchSingleTop = true
+                    }
                 },
             )
         }

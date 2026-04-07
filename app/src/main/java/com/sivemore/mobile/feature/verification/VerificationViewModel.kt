@@ -3,6 +3,7 @@ package com.sivemore.mobile.feature.verification
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sivemore.mobile.domain.repository.AuthRepository
 import com.sivemore.mobile.domain.repository.VerificationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -19,6 +20,7 @@ import kotlinx.coroutines.launch
 class VerificationViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val verificationRepository: VerificationRepository,
+    private val authRepository: AuthRepository,
 ) : ViewModel() {
     private val orderUnitId: String = checkNotNull(savedStateHandle["vehicleId"])
 
@@ -44,28 +46,22 @@ class VerificationViewModel @Inject constructor(
             is VerificationUiAction.SectionNoteChanged -> mutate {
                 verificationRepository.updateSectionNote(orderUnitId, action.sectionId, action.value)
             }
-            VerificationUiAction.AddEvidenceRequested -> _uiState.update { it.copy(showEvidenceDialog = true) }
-            VerificationUiAction.EvidenceDialogDismissed -> _uiState.update { it.copy(showEvidenceDialog = false) }
-            is VerificationUiAction.EvidencePicked -> mutate(
-                closeEvidenceDialog = true,
-            ) {
-                verificationRepository.addEvidence(orderUnitId, action.sectionId, action.upload)
-            }
+            is VerificationUiAction.EvidencePicked -> addEvidence(action.upload)
             is VerificationUiAction.RemoveEvidence -> mutate {
                 verificationRepository.removeEvidence(orderUnitId, action.evidenceId)
             }
-            VerificationUiAction.AddCommentRequested -> _uiState.update {
-                it.copy(showCommentDialog = true, commentDraft = it.session?.comments.orEmpty())
+            is VerificationUiAction.CommentDraftChanged -> _uiState.update {
+                it.copy(commentDraft = action.value, errorMessage = null)
             }
-            is VerificationUiAction.CommentDraftChanged -> _uiState.update { it.copy(commentDraft = action.value) }
-            VerificationUiAction.CommentDialogDismissed -> _uiState.update { it.copy(showCommentDialog = false) }
-            VerificationUiAction.CommentSaved -> mutate(closeCommentDialog = true) {
-                verificationRepository.updateComments(orderUnitId, uiState.value.commentDraft)
+            VerificationUiAction.SubmitRequested -> completeVerification()
+            VerificationUiAction.PauseRequested -> _uiState.update { it.copy(showPauseDialog = true, errorMessage = null) }
+            VerificationUiAction.PauseDismissed -> _uiState.update { it.copy(showPauseDialog = false) }
+            VerificationUiAction.PauseConfirmed -> pauseVerification()
+            VerificationUiAction.LogoutRequested -> signOut()
+            VerificationUiAction.NextSectionRequested -> moveToNextSection()
+            VerificationUiAction.PhotoLimitReached -> _uiState.update {
+                it.copy(errorMessage = "Solo puedes agregar hasta 3 fotos en la seccion actual.")
             }
-            VerificationUiAction.SubmitRequested -> _uiState.update { it.copy(showSubmitDialog = true) }
-            VerificationUiAction.SubmitDismissed -> _uiState.update { it.copy(showSubmitDialog = false) }
-            VerificationUiAction.SubmitConfirmed -> completeVerification()
-            VerificationUiAction.SessionActionsRequested -> openSessionActions()
         }
     }
 
@@ -88,6 +84,7 @@ class VerificationViewModel @Inject constructor(
                         isRefreshing = false,
                         session = session,
                         commentDraft = session.comments,
+                        currentSectionIndex = it.currentSectionIndex.coerceIn(0, session.sections.lastIndex.coerceAtLeast(0)),
                         errorMessage = null,
                     )
                 }
@@ -104,8 +101,6 @@ class VerificationViewModel @Inject constructor(
     }
 
     private fun mutate(
-        closeEvidenceDialog: Boolean = false,
-        closeCommentDialog: Boolean = false,
         mutation: suspend () -> com.sivemore.mobile.domain.model.VerificationSession,
     ) {
         viewModelScope.launch {
@@ -115,8 +110,7 @@ class VerificationViewModel @Inject constructor(
                         it.copy(
                             session = session,
                             errorMessage = null,
-                            showEvidenceDialog = if (closeEvidenceDialog) false else it.showEvidenceDialog,
-                            showCommentDialog = if (closeCommentDialog) false else it.showCommentDialog,
+                            currentSectionIndex = it.currentSectionIndex.coerceIn(0, session.sections.lastIndex.coerceAtLeast(0)),
                         )
                     }
                 }
@@ -128,17 +122,82 @@ class VerificationViewModel @Inject constructor(
         }
     }
 
-    private fun completeVerification() {
+    private fun addEvidence(upload: com.sivemore.mobile.domain.model.EvidenceUpload) {
+        val currentSectionId = uiState.value.currentSection?.id
+        if (currentSectionId == null) return
+        if (!uiState.value.canAddMorePhotos) {
+            _uiState.update { it.copy(errorMessage = "Solo puedes agregar hasta 3 fotos en la seccion actual.") }
+            return
+        }
+        mutate {
+            verificationRepository.addEvidence(orderUnitId, currentSectionId, upload)
+        }
+    }
+
+    private fun moveToNextSection() {
+        _uiState.update { current ->
+            if (!current.canGoNext) return@update current
+            current.copy(
+                currentSectionIndex = current.currentSectionIndex + 1,
+                errorMessage = null,
+            )
+        }
+    }
+
+    private suspend fun persistCommentIfNeeded() {
+        val state = uiState.value
+        val session = state.session ?: return
+        if (state.commentDraft == session.comments) return
+        _uiState.update { it.copy(isSavingComment = true) }
+        val updated = verificationRepository.updateComments(orderUnitId, state.commentDraft)
+        _uiState.update {
+            it.copy(
+                session = updated,
+                commentDraft = updated.comments,
+                isSavingComment = false,
+                currentSectionIndex = it.currentSectionIndex.coerceIn(0, updated.sections.lastIndex.coerceAtLeast(0)),
+            )
+        }
+    }
+
+    private fun pauseVerification() {
         viewModelScope.launch {
             runCatching {
+                persistCommentIfNeeded()
+                verificationRepository.pauseSession(orderUnitId)
+            }.onSuccess {
+                _uiState.update { it.copy(showPauseDialog = false) }
+                _events.emit(VerificationEvent.BackToLookup)
+            }.onFailure { failure ->
+                _uiState.update {
+                    it.copy(
+                        showPauseDialog = false,
+                        isSavingComment = false,
+                        errorMessage = failure.message ?: "No fue posible pausar la verificacion.",
+                    )
+                }
+            }
+        }
+    }
+
+    private fun completeVerification() {
+        if (!uiState.value.isEntireVerificationComplete) {
+            _uiState.update {
+                it.copy(errorMessage = "Debes completar todas las secciones antes de finalizar la verificacion.")
+            }
+            return
+        }
+        viewModelScope.launch {
+            runCatching {
+                persistCommentIfNeeded()
                 verificationRepository.completeSession(orderUnitId)
             }.onSuccess {
-                _uiState.update { it.copy(showSubmitDialog = false) }
+                _uiState.update { it.copy(isSavingComment = false) }
                 _events.emit(VerificationEvent.Completed)
             }.onFailure { failure ->
                 _uiState.update {
                     it.copy(
-                        showSubmitDialog = false,
+                        isSavingComment = false,
                         errorMessage = failure.message ?: "No fue posible enviar la inspeccion.",
                     )
                 }
@@ -146,9 +205,10 @@ class VerificationViewModel @Inject constructor(
         }
     }
 
-    private fun openSessionActions() {
+    private fun signOut() {
         viewModelScope.launch {
-            _events.emit(VerificationEvent.OpenSessionActions(orderUnitId))
+            authRepository.signOut()
+            _events.emit(VerificationEvent.SignedOut)
         }
     }
 }

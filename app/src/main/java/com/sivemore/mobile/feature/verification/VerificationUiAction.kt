@@ -23,36 +23,41 @@ sealed interface VerificationUiAction {
         val value: String,
     ) : VerificationUiAction
 
-    data object AddEvidenceRequested : VerificationUiAction
-    data object EvidenceDialogDismissed : VerificationUiAction
     data class EvidencePicked(
-        val sectionId: String,
         val upload: EvidenceUpload,
     ) : VerificationUiAction
-
     data class RemoveEvidence(val evidenceId: String) : VerificationUiAction
-    data object AddCommentRequested : VerificationUiAction
     data class CommentDraftChanged(val value: String) : VerificationUiAction
-    data object CommentDialogDismissed : VerificationUiAction
-    data object CommentSaved : VerificationUiAction
     data object SubmitRequested : VerificationUiAction
-    data object SubmitDismissed : VerificationUiAction
-    data object SubmitConfirmed : VerificationUiAction
-    data object SessionActionsRequested : VerificationUiAction
+    data object PauseRequested : VerificationUiAction
+    data object PauseDismissed : VerificationUiAction
+    data object PauseConfirmed : VerificationUiAction
+    data object LogoutRequested : VerificationUiAction
+    data object NextSectionRequested : VerificationUiAction
+    data object PhotoLimitReached : VerificationUiAction
 }
 
 data class VerificationUiState(
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
     val session: VerificationSession? = null,
-    val showEvidenceDialog: Boolean = false,
-    val showCommentDialog: Boolean = false,
-    val showSubmitDialog: Boolean = false,
+    val currentSectionIndex: Int = 0,
+    val isSavingComment: Boolean = false,
+    val showPauseDialog: Boolean = false,
     val commentDraft: String = "",
     val errorMessage: String? = null,
-)
+) {
+    val currentSection = session?.sections?.getOrNull(currentSectionIndex)
+    val canGoNext: Boolean = currentSectionIndex < (session?.sections?.lastIndex ?: -1) &&
+        currentSection?.items.orEmpty().all { !it.required || it.selectedOptionId != null }
+    val canAddMorePhotos: Boolean = currentSection?.evidence?.size?.let { it < 3 } ?: false
+    val isEntireVerificationComplete: Boolean = session?.sections.orEmpty().all { section ->
+        section.items.all { !it.required || it.selectedOptionId != null }
+    }
+}
 
 sealed interface VerificationEvent {
-    data class OpenSessionActions(val orderUnitId: String) : VerificationEvent
     data object Completed : VerificationEvent
+    data object BackToLookup : VerificationEvent
+    data object SignedOut : VerificationEvent
 }

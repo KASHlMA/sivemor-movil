@@ -43,7 +43,7 @@ internal fun sampleSession(orderUnitId: String = "1"): VerificationSession = Ver
         InspectionSection(
             id = "10",
             title = "Luces",
-            description = "Revisión inicial",
+            description = "Revision inicial",
             noteValue = "",
             items = listOf(
                 InspectionItem(
@@ -57,7 +57,7 @@ internal fun sampleSession(orderUnitId: String = "1"): VerificationSession = Ver
                     ),
                     selectedOptionId = "PASS",
                     noteValue = "",
-                )
+                ),
             ),
             evidence = listOf(
                 EvidenceItem(
@@ -66,11 +66,43 @@ internal fun sampleSession(orderUnitId: String = "1"): VerificationSession = Ver
                     subtitle = "image/jpeg",
                     addedAtLabel = "23/03/2026 12:00",
                     accentColor = 0xFFD7EAD8,
-                )
+                ),
             ),
-        )
+        ),
+        InspectionSection(
+            id = "11",
+            title = "Llantas",
+            description = "Revision secundaria",
+            noteValue = "",
+            items = listOf(
+                InspectionItem(
+                    id = "101",
+                    title = "Profundidad",
+                    required = true,
+                    options = listOf(
+                        InspectionOption("PASS", "Cumple"),
+                        InspectionOption("FAIL", "No cumple"),
+                    ),
+                    selectedOptionId = "PASS",
+                    noteValue = "",
+                ),
+            ),
+            evidence = emptyList(),
+        ),
     ),
     comments = "",
     updatedAtLabel = "23/03/2026 12:00",
     evidenceCount = 1,
 )
+
+internal fun sampleIncompleteSession(orderUnitId: String = "1"): VerificationSession = sampleSession(orderUnitId).let { session ->
+    session.copy(
+        sections = session.sections.mapIndexed { index, section ->
+            if (index == 1) {
+                section.copy(items = section.items.map { it.copy(selectedOptionId = null) })
+            } else {
+                section
+            }
+        },
+    )
+}
