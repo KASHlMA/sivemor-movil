@@ -106,6 +106,38 @@ object InspectionSectionCatalog {
         InspectionQuestionOption(id = "MISSING", label = "Faltantes"),
     )
 
+    private val brazoPitmanOptions = listOf(
+        InspectionQuestionOption(id = "APPROVED", label = "Aprobado"),
+        InspectionQuestionOption(id = "HIT", label = "Golpeado"),
+    )
+
+    private val manijasPuertasOptions = listOf(
+        InspectionQuestionOption(id = "APPROVED", label = "Aprobadas"),
+        InspectionQuestionOption(id = "ONE_BROKEN", label = "1 Rota"),
+        InspectionQuestionOption(id = "TWO_BROKEN", label = "2 Rotas"),
+    )
+
+    private val chavetasOptions = listOf(
+        InspectionQuestionOption(id = "APPROVED", label = "Aprobadas"),
+        InspectionQuestionOption(id = "MISSING", label = "Faltan"),
+    )
+
+    private val compresorOptions = listOf(
+        InspectionQuestionOption(id = "APPROVED", label = "Aprobado"),
+        InspectionQuestionOption(id = "NO_CUT", label = "No corta"),
+        InspectionQuestionOption(id = "FAILED", label = "Reprobado"),
+    )
+
+    private val tanquesAireOptions = listOf(
+        InspectionQuestionOption(id = "APPROVED", label = "Aprobado"),
+        InspectionQuestionOption(id = "FAILED", label = "Reprobado"),
+    )
+
+    private val motorEmisionesOptions = listOf(
+        InspectionQuestionOption(id = "APPROVED", label = "Aprobado"),
+        InspectionQuestionOption(id = "FAILED", label = "Reprobado"),
+    )
+
     fun lucesSection(): InspectionSectionUiState = InspectionSectionUiState(
         id = "luces",
         title = "Luces",
@@ -208,6 +240,83 @@ object InspectionSectionCatalog {
                     numericQuestion("llantas_tuercas_faltantes_trasera_derecha", "Tuercas faltantes trasera derecha", "Ingresa la cantidad de tuercas faltantes:"),
                     numericQuestion("llantas_tuercas_rotas_trasera_derecha", "Tuercas rotas trasera derecha", "Ingresa la cantidad de tuercas rotas:"),
                 ),
+            ),
+        ),
+    )
+
+    fun direccionSection(): InspectionSectionUiState = InspectionSectionUiState(
+        id = "direccion",
+        title = "Dirección, estructura y accesos",
+        description = "Completa la inspección de dirección, estructura y accesos antes de avanzar a la siguiente sección.",
+        questions = listOf(
+            InspectionQuestionItem(
+                id = "direccion_brazo_pitman",
+                title = "Brazo pitman",
+                options = brazoPitmanOptions,
+            ),
+            InspectionQuestionItem(
+                id = "direccion_manijas_puertas",
+                title = "Manijas de puertas",
+                options = manijasPuertasOptions,
+            ),
+            InspectionQuestionItem(
+                id = "direccion_chavetas",
+                title = "Chavetas",
+                options = chavetasOptions,
+            ),
+            InspectionQuestionItem(
+                id = "direccion_chavetas_faltantes",
+                title = "En caso de que hagan falta chavetas",
+                kind = InspectionQuestionKind.NumericInput,
+                helperText = "Número de chavetas faltantes",
+            ),
+        ),
+    )
+
+    fun aireFrenosSection(): InspectionSectionUiState = InspectionSectionUiState(
+        id = "aire_frenos",
+        title = "Sistema de aire / frenos",
+        description = "Completa la inspección del sistema de aire / frenos antes de avanzar a la siguiente sección.",
+        questions = listOf(
+            InspectionQuestionItem(
+                id = "aire_frenos_compresor",
+                title = "Compresor",
+                options = compresorOptions,
+            ),
+            InspectionQuestionItem(
+                id = "aire_frenos_tanques_aire",
+                title = "Tanques de aire",
+                options = tanquesAireOptions,
+            ),
+            InspectionQuestionItem(
+                id = "aire_frenos_tiempo_carga_psi",
+                title = "Tiempo de carga psi",
+                kind = InspectionQuestionKind.NumericInput,
+                helperText = "Ingresa el tiempo de carga en psi",
+            ),
+            InspectionQuestionItem(
+                id = "aire_frenos_tiempo_carga_tiempo",
+                title = "Tiempo de carga tiempo",
+                kind = InspectionQuestionKind.NumericInput,
+                helperText = "Ingresa el tiempo de carga en minutos",
+            ),
+        ),
+    )
+
+    fun motorEmisionesSection(): InspectionSectionUiState = InspectionSectionUiState(
+        id = "motor_emisiones",
+        title = "Motor y emisiones",
+        description = "Completa la inspección de motor y emisiones antes de avanzar a la siguiente sección.",
+        questions = listOf(
+            InspectionQuestionItem(
+                id = "motor_emisiones_humo",
+                title = "Humo",
+                options = motorEmisionesOptions,
+            ),
+            InspectionQuestionItem(
+                id = "motor_emisiones_gobernado",
+                title = "Gobernado",
+                options = motorEmisionesOptions,
             ),
         ),
     )

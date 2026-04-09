@@ -32,6 +32,9 @@ class InspectionFlowViewModel @Inject constructor(
             vehicleId = vehicleId,
             lucesSection = InspectionSectionCatalog.lucesSection(),
             llantasSection = InspectionSectionCatalog.llantasSection(),
+            direccionSection = InspectionSectionCatalog.direccionSection(),
+            aireFrenosSection = InspectionSectionCatalog.aireFrenosSection(),
+            motorEmisionesSection = InspectionSectionCatalog.motorEmisionesSection(),
         ),
     )
     val uiState: StateFlow<InspectionFlowUiState> = _uiState.asStateFlow()
@@ -50,7 +53,12 @@ class InspectionFlowViewModel @Inject constructor(
             }
             is InspectionFlowAction.LucesOptionSelected -> updateSingleChoiceAnswer("luces", action.questionId, action.optionId)
             is InspectionFlowAction.LlantasOptionSelected -> updateSingleChoiceAnswer("llantas", action.questionId, action.optionId)
-            is InspectionFlowAction.LlantasNumericValueChanged -> updateNumericAnswer(action.questionId, action.value)
+            is InspectionFlowAction.LlantasNumericValueChanged -> updateNumericAnswer(action.questionId, action.value, "llantas")
+            is InspectionFlowAction.DireccionOptionSelected -> updateSingleChoiceAnswer("direccion", action.questionId, action.optionId)
+            is InspectionFlowAction.DireccionNumericValueChanged -> updateNumericAnswer(action.questionId, action.value, "direccion")
+            is InspectionFlowAction.AireFrenosOptionSelected -> updateSingleChoiceAnswer("aire_frenos", action.questionId, action.optionId)
+            is InspectionFlowAction.AireFrenosNumericValueChanged -> updateNumericAnswer(action.questionId, action.value, "aire_frenos")
+            is InspectionFlowAction.MotorEmisionesOptionSelected -> updateSingleChoiceAnswer("motor_emisiones", action.questionId, action.optionId)
             is InspectionFlowAction.BirloToggled -> updateBirloState(action.groupId, action.birloIndex, action.checked)
             InspectionFlowAction.PreviousClicked -> moveToPreviousSection()
             InspectionFlowAction.NextClicked -> navigateNextIfComplete()
@@ -114,6 +122,21 @@ class InspectionFlowViewModel @Inject constructor(
                 } else {
                     current.llantasSection
                 },
+                direccionSection = if (sectionId == "direccion") {
+                    current.direccionSection.updateQuestion(questionId) { it.copy(selectedOptionId = optionId) }
+                } else {
+                    current.direccionSection
+                },
+                aireFrenosSection = if (sectionId == "aire_frenos") {
+                    current.aireFrenosSection.updateQuestion(questionId) { it.copy(selectedOptionId = optionId) }
+                } else {
+                    current.aireFrenosSection
+                },
+                motorEmisionesSection = if (sectionId == "motor_emisiones") {
+                    current.motorEmisionesSection.updateQuestion(questionId) { it.copy(selectedOptionId = optionId) }
+                } else {
+                    current.motorEmisionesSection
+                },
                 errorMessage = null,
             )
         }
@@ -122,11 +145,26 @@ class InspectionFlowViewModel @Inject constructor(
     private fun updateNumericAnswer(
         questionId: String,
         value: String,
+        sectionId: String,
     ) {
         val sanitizedValue = value.filter(Char::isDigit)
         _uiState.update { current ->
             current.copy(
-                llantasSection = current.llantasSection.updateQuestion(questionId) { it.copy(numericValue = sanitizedValue) },
+                llantasSection = if (sectionId == "llantas") {
+                    current.llantasSection.updateQuestion(questionId) { it.copy(numericValue = sanitizedValue) }
+                } else {
+                    current.llantasSection
+                },
+                direccionSection = if (sectionId == "direccion") {
+                    current.direccionSection.updateQuestion(questionId) { it.copy(numericValue = sanitizedValue) }
+                } else {
+                    current.direccionSection
+                },
+                aireFrenosSection = if (sectionId == "aire_frenos") {
+                    current.aireFrenosSection.updateQuestion(questionId) { it.copy(numericValue = sanitizedValue) }
+                } else {
+                    current.aireFrenosSection
+                },
                 errorMessage = null,
             )
         }
@@ -280,6 +318,9 @@ data class InspectionFlowUiState(
     val isLoading: Boolean = true,
     val lucesSection: InspectionSectionUiState,
     val llantasSection: InspectionSectionUiState,
+    val direccionSection: InspectionSectionUiState,
+    val aireFrenosSection: InspectionSectionUiState,
+    val motorEmisionesSection: InspectionSectionUiState,
     val session: VerificationSession? = null,
     val currentSectionIndex: Int = 0,
     val commentDraft: String = "",
@@ -304,16 +345,24 @@ data class InspectionFlowUiState(
         get() = when (currentSectionIndex) {
             0 -> lucesSection.isComplete
             1 -> llantasSection.isComplete
+            2 -> direccionSection.isComplete
+            3 -> aireFrenosSection.isComplete
+            4 -> motorEmisionesSection.isComplete
             else -> currentSection?.items.orEmpty().all { !it.required || it.selectedOptionId != null }
         }
 
     val isEntireVerificationComplete: Boolean
         get() {
             val remainingSectionsComplete = session?.sections
-                ?.drop(2)
+                ?.drop(5)
                 .orEmpty()
                 .all { section -> section.items.all { !it.required || it.selectedOptionId != null } }
-            return lucesSection.isComplete && llantasSection.isComplete && remainingSectionsComplete
+            return lucesSection.isComplete &&
+                llantasSection.isComplete &&
+                direccionSection.isComplete &&
+                aireFrenosSection.isComplete &&
+                motorEmisionesSection.isComplete &&
+                remainingSectionsComplete
         }
 }
 
@@ -322,6 +371,11 @@ sealed interface InspectionFlowAction {
     data class LucesOptionSelected(val questionId: String, val optionId: String) : InspectionFlowAction
     data class LlantasOptionSelected(val questionId: String, val optionId: String) : InspectionFlowAction
     data class LlantasNumericValueChanged(val questionId: String, val value: String) : InspectionFlowAction
+    data class DireccionOptionSelected(val questionId: String, val optionId: String) : InspectionFlowAction
+    data class DireccionNumericValueChanged(val questionId: String, val value: String) : InspectionFlowAction
+    data class AireFrenosOptionSelected(val questionId: String, val optionId: String) : InspectionFlowAction
+    data class AireFrenosNumericValueChanged(val questionId: String, val value: String) : InspectionFlowAction
+    data class MotorEmisionesOptionSelected(val questionId: String, val optionId: String) : InspectionFlowAction
     data class BirloToggled(val groupId: String, val birloIndex: Int, val checked: Boolean) : InspectionFlowAction
     data object PreviousClicked : InspectionFlowAction
     data object CommentDialogOpened : InspectionFlowAction

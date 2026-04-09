@@ -12,6 +12,9 @@ sealed class AppDestination(
     }
     data object Luces : AppDestination(route = "luces")
     data object Llantas : AppDestination(route = "llantas")
+    data object Direccion : AppDestination(route = "direccion")
+    data object AireFrenos : AppDestination(route = "aire_frenos")
+    data object Motor : AppDestination(route = "motor")
     data object InspectionNextSection : AppDestination(route = "inspection_next_section")
     data object Verification : AppDestination(route = "verification/{vehicleId}") {
         fun createRoute(vehicleId: String): String = "verification/$vehicleId"
@@ -30,6 +33,9 @@ sealed class AppDestination(
             VerificationFlow.route -> VerificationFlow
             Luces.route -> Luces
             Llantas.route -> Llantas
+            Direccion.route -> Direccion
+            AireFrenos.route -> AireFrenos
+            Motor.route -> Motor
             InspectionNextSection.route -> InspectionNextSection
             Verification.route -> Verification
             SessionActions.route -> SessionActions
