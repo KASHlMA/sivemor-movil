@@ -13,6 +13,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.sivemore.mobile.feature.auth.AuthRoute
 import com.sivemore.mobile.feature.inspection.InspectionNextSectionRoute
 import com.sivemore.mobile.feature.inspection.InspectionFlowViewModel
+import com.sivemore.mobile.feature.inspection.LlantasRoute
 import com.sivemore.mobile.feature.luces.LucesRoute
 import com.sivemore.mobile.feature.sessionactions.SessionActionsRoute
 import com.sivemore.mobile.feature.vehiclemenu.VehicleMenuRoute
@@ -82,6 +83,31 @@ fun SivemoreNavHost(
                 val viewModel: InspectionFlowViewModel = hiltViewModel(parentEntry)
                 LucesRoute(
                     viewModel = viewModel,
+                    onNavigateNext = {
+                        navController.navigate(AppDestination.Llantas.route)
+                    },
+                    onBackToLookup = {
+                        navController.popBackStack(
+                            route = AppDestination.VehicleLookup.route,
+                            inclusive = false,
+                        )
+                    },
+                    onSignedOut = {
+                        navController.navigate(AppDestination.Auth.route) {
+                            popUpTo(navController.graph.id) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
+                )
+            }
+            composable(AppDestination.Llantas.route) { backStackEntry ->
+                val parentEntry = remember(backStackEntry) {
+                    navController.getBackStackEntry(AppDestination.VerificationFlow.route)
+                }
+                val viewModel: InspectionFlowViewModel = hiltViewModel(parentEntry)
+                LlantasRoute(
+                    viewModel = viewModel,
+                    onNavigateBack = { navController.popBackStack() },
                     onNavigateNext = {
                         navController.navigate(AppDestination.InspectionNextSection.route)
                     },

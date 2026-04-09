@@ -287,6 +287,7 @@ private fun LucesScreenPreview() {
                 vehicleId = "1",
                 isLoading = false,
                 lucesSection = com.sivemore.mobile.feature.inspection.InspectionSectionCatalog.lucesSection(),
+                llantasSection = com.sivemore.mobile.feature.inspection.InspectionSectionCatalog.llantasSection(),
             ),
             onAction = {},
             onTakePhoto = {},
