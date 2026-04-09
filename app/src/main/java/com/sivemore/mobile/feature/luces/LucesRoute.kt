@@ -1,9 +1,14 @@
 package com.sivemore.mobile.feature.luces
 
+import android.content.Context
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,33 +23,73 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sivemore.mobile.R
 import com.sivemore.mobile.app.designsystem.BrandedHeader
+import com.sivemore.mobile.app.designsystem.BrandedLoadingScreen
 import com.sivemore.mobile.app.designsystem.SivemoreTheme
 import com.sivemore.mobile.app.designsystem.VerificationCard
+import com.sivemore.mobile.feature.inspection.InspectionFlowAction
+import com.sivemore.mobile.feature.inspection.InspectionFlowEvent
+import com.sivemore.mobile.feature.inspection.InspectionCommentDialog
+import com.sivemore.mobile.feature.inspection.InspectionGlobalActionsPanel
+import com.sivemore.mobile.feature.inspection.InspectionPauseDialog
+import com.sivemore.mobile.feature.inspection.InspectionFlowUiState
+import com.sivemore.mobile.feature.inspection.InspectionFlowViewModel
 import com.sivemore.mobile.feature.inspection.InspectionQuestionItem
 import com.sivemore.mobile.preview.PhonePreview
+import java.io.File
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun LucesRoute(
-    onNavigateNext: (String) -> Unit,
+    viewModel: InspectionFlowViewModel,
+    onNavigateNext: () -> Unit,
+    onBackToLookup: () -> Unit,
+    onSignedOut: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: LucesViewModel = hiltViewModel(),
 ) {
     val state = viewModel.uiState.collectAsStateWithLifecycle().value
+    val context = LocalContext.current
+    var pendingCaptureUri by remember { mutableStateOf<Uri?>(null) }
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture(),
+    ) { success ->
+        val captureUri = pendingCaptureUri
+        if (success && captureUri != null) {
+            viewModel.onAction(
+                InspectionFlowAction.EvidencePicked(
+                    com.sivemore.mobile.domain.model.EvidenceUpload(
+                        uri = captureUri.toString(),
+                        fileName = "captured-${System.currentTimeMillis()}.jpg",
+                        mimeType = "image/jpeg",
+                    ),
+                ),
+            )
+        }
+        pendingCaptureUri = null
+    }
 
     LaunchedEffect(viewModel) {
+        viewModel.onAction(InspectionFlowAction.EnterSection(0))
         viewModel.events.collectLatest { event ->
             when (event) {
-                is LucesEvent.NavigateToNextSection -> onNavigateNext(event.vehicleId)
+                InspectionFlowEvent.NavigateToNextSection -> onNavigateNext()
+                InspectionFlowEvent.BackToLookup -> onBackToLookup()
+                InspectionFlowEvent.Completed -> onBackToLookup()
+                InspectionFlowEvent.SignedOut -> onSignedOut()
             }
         }
     }
@@ -52,65 +97,134 @@ fun LucesRoute(
     LucesScreen(
         state = state,
         onAction = viewModel::onAction,
+        onTakePhoto = {
+            if (state.canAddMorePhotos) {
+                val captureUri = createCaptureUri(context)
+                pendingCaptureUri = captureUri
+                cameraLauncher.launch(captureUri)
+            } else {
+                viewModel.onAction(InspectionFlowAction.PhotoLimitReached)
+            }
+        },
         modifier = modifier,
     )
 }
 
 @Composable
 fun LucesScreen(
-    state: LucesUiState,
-    onAction: (LucesUiAction) -> Unit,
+    state: InspectionFlowUiState,
+    onAction: (InspectionFlowAction) -> Unit,
+    onTakePhoto: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    if (state.isLoading) {
+        BrandedLoadingScreen(modifier = modifier)
+        return
+    }
+
     Scaffold(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .testTag("luces_screen"),
         topBar = {
-            BrandedHeader(modifier = Modifier.systemBarsPadding())
+            BrandedHeader(
+                modifier = Modifier.systemBarsPadding(),
+                showAction = true,
+                onActionClick = { onAction(InspectionFlowAction.LogoutRequested) },
+            )
         },
         bottomBar = {
-            Button(
-                onClick = { onAction(LucesUiAction.NextClicked) },
-                enabled = state.isNextEnabled,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 16.dp)
-                    .testTag("luces_next_button"),
-            ) {
-                Text(stringResource(R.string.luces_next_button))
-            }
+            InspectionGlobalActionsPanel(
+                onAddComment = { onAction(InspectionFlowAction.CommentDialogOpened) },
+                onTakePhoto = onTakePhoto,
+                onPause = { onAction(InspectionFlowAction.PauseRequested) },
+                onFinish = { onAction(InspectionFlowAction.SubmitRequested) },
+            )
         },
     ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 24.dp, vertical = 18.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
+        LucesContent(
+            state = state,
+            onAction = onAction,
+            innerPadding = innerPadding,
+        )
+    }
+
+    if (state.showPauseDialog) {
+        InspectionPauseDialog(
+            onConfirm = { onAction(InspectionFlowAction.PauseConfirmed) },
+            onDismiss = { onAction(InspectionFlowAction.PauseDismissed) },
+        )
+    }
+
+    if (state.showCommentDialog) {
+        InspectionCommentDialog(
+            commentValue = state.commentDraft,
+            onValueChange = { onAction(InspectionFlowAction.CommentDraftChanged(it)) },
+            onDismiss = { onAction(InspectionFlowAction.CommentDialogDismissed) },
+            onSave = { onAction(InspectionFlowAction.CommentSaved) },
+            isSaving = state.isSavingComment,
+        )
+    }
+}
+
+@Composable
+private fun LucesContent(
+    state: InspectionFlowUiState,
+    onAction: (InspectionFlowAction) -> Unit,
+    innerPadding: PaddingValues,
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)
+            .padding(horizontal = 24.dp, vertical = 18.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        item {
+            Text(
+                text = state.lucesSection.title,
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+        item {
+            Text(
+                text = state.errorMessage ?: state.lucesSection.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (state.errorMessage == null) {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                } else {
+                    MaterialTheme.colorScheme.error
+                },
+            )
+        }
+        if (!state.commentDraft.isBlank()) {
             item {
                 Text(
-                    text = state.section.title,
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-            }
-            item {
-                Text(
-                    text = state.section.description,
-                    style = MaterialTheme.typography.bodyMedium,
+                    text = stringResource(R.string.inspection_comment_saved, state.commentDraft),
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            items(state.section.questions, key = { it.id }) { question ->
-                LucesInspectionCard(
-                    question = question,
-                    onOptionSelected = { optionId ->
-                        onAction(LucesUiAction.OptionSelected(question.id, optionId))
-                    },
-                )
+        }
+        items(state.lucesSection.questions, key = { it.id }) { question ->
+            LucesInspectionCard(
+                question = question,
+                onOptionSelected = { optionId ->
+                    onAction(InspectionFlowAction.LucesOptionSelected(question.id, optionId))
+                },
+            )
+        }
+        item {
+            Button(
+                onClick = { onAction(InspectionFlowAction.NextClicked) },
+                enabled = state.isCurrentSectionComplete,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("luces_next_button"),
+            ) {
+                Text(stringResource(R.string.luces_next_button))
             }
         }
     }
@@ -154,16 +268,28 @@ private fun LucesInspectionCard(
     }
 }
 
+private fun createCaptureUri(context: Context): Uri {
+    val imageDir = File(context.cacheDir, "images").apply { mkdirs() }
+    val imageFile = File.createTempFile("capture_", ".jpg", imageDir)
+    return FileProvider.getUriForFile(
+        context,
+        "${context.packageName}.fileprovider",
+        imageFile,
+    )
+}
+
 @PhonePreview
 @Composable
 private fun LucesScreenPreview() {
     SivemoreTheme {
         LucesScreen(
-            state = LucesUiState(
+            state = InspectionFlowUiState(
                 vehicleId = "1",
-                section = com.sivemore.mobile.feature.inspection.InspectionSectionCatalog.lucesSection(),
+                isLoading = false,
+                lucesSection = com.sivemore.mobile.feature.inspection.InspectionSectionCatalog.lucesSection(),
             ),
             onAction = {},
+            onTakePhoto = {},
         )
     }
 }

@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -185,28 +184,33 @@ fun VerificationScreen(
                 )
             }
 
-            LazyColumn(
+            Box(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(horizontal = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                item {
-                    SectionContent(
-                        section = currentSection,
-                        onAction = onAction,
-                    )
-                }
-                if (state.currentSectionIndex < session.sections.lastIndex) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
                     item {
-                        Button(
-                            onClick = { onAction(VerificationUiAction.NextSectionRequested) },
-                            enabled = state.canGoNext,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .testTag("next_section_button"),
-                        ) {
-                            Text(stringResource(R.string.verification_next_section))
+                        SectionContent(
+                            section = currentSection,
+                            onAction = onAction,
+                        )
+                    }
+                    if (state.currentSectionIndex < session.sections.lastIndex) {
+                        item {
+                            Button(
+                                onClick = { onAction(VerificationUiAction.NextSectionRequested) },
+                                enabled = state.canGoNext,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag("next_section_button"),
+                            ) {
+                                Text(stringResource(R.string.verification_next_section))
+                            }
                         }
                     }
                 }

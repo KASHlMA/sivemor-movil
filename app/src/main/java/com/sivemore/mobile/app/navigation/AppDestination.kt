@@ -7,12 +7,11 @@ sealed class AppDestination(
     data object VehicleMenu : AppDestination(route = "vehicle_menu")
     data object VehicleLookup : AppDestination(route = "vehicle_lookup")
     data object VehicleRegistration : AppDestination(route = "vehicle_registration")
-    data object Luces : AppDestination(route = "luces/{vehicleId}") {
-        fun createRoute(vehicleId: String): String = "luces/$vehicleId"
+    data object VerificationFlow : AppDestination(route = "verification_flow/{vehicleId}") {
+        fun createRoute(vehicleId: String): String = "verification_flow/$vehicleId"
     }
-    data object InspectionNextSection : AppDestination(route = "inspection_next_section/{vehicleId}") {
-        fun createRoute(vehicleId: String): String = "inspection_next_section/$vehicleId"
-    }
+    data object Luces : AppDestination(route = "luces")
+    data object InspectionNextSection : AppDestination(route = "inspection_next_section")
     data object Verification : AppDestination(route = "verification/{vehicleId}") {
         fun createRoute(vehicleId: String): String = "verification/$vehicleId"
     }
@@ -27,6 +26,7 @@ sealed class AppDestination(
             VehicleMenu.route -> VehicleMenu
             VehicleLookup.route -> VehicleLookup
             VehicleRegistration.route -> VehicleRegistration
+            VerificationFlow.route -> VerificationFlow
             Luces.route -> Luces
             InspectionNextSection.route -> InspectionNextSection
             Verification.route -> Verification
