@@ -13,6 +13,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.sivemore.mobile.feature.auth.AuthRoute
 import com.sivemore.mobile.feature.inspection.AireFrenosRoute
 import com.sivemore.mobile.feature.inspection.DireccionRoute
+import com.sivemore.mobile.feature.inspection.EvidenciasRoute
 import com.sivemore.mobile.feature.inspection.InspectionNextSectionRoute
 import com.sivemore.mobile.feature.inspection.InspectionFlowViewModel
 import com.sivemore.mobile.feature.inspection.LlantasRoute
@@ -22,7 +23,7 @@ import com.sivemore.mobile.feature.luces.LucesRoute
 import com.sivemore.mobile.feature.sessionactions.SessionActionsRoute
 import com.sivemore.mobile.feature.vehiclemenu.VehicleMenuRoute
 import com.sivemore.mobile.feature.vehiclelookup.VehicleLookupRoute
-import com.sivemore.mobile.feature.vehicleregistration.VehicleRegistrationScreen
+import com.sivemore.mobile.feature.vehicleregistration.VehicleRegistrationRoute
 import com.sivemore.mobile.feature.verification.VerificationRoute
 
 @Composable
@@ -73,7 +74,23 @@ fun SivemoreNavHost(
             )
         }
         composable(AppDestination.VehicleRegistration.route) {
-            VehicleRegistrationScreen()
+            VehicleRegistrationRoute(
+                onBackToMenu = {
+                    navController.popBackStack(
+                        route = AppDestination.VehicleMenu.route,
+                        inclusive = false,
+                    )
+                },
+                onVehicleSaved = { vehicleId ->
+                    navController.navigate(AppDestination.VerificationFlow.createRoute(vehicleId))
+                },
+                onSignedOut = {
+                    navController.navigate(AppDestination.Auth.route) {
+                        popUpTo(navController.graph.id) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
+            )
         }
         navigation(
             route = AppDestination.VerificationFlow.route,
@@ -213,8 +230,30 @@ fun SivemoreNavHost(
                     viewModel = viewModel,
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateNext = {
-                        navController.navigate(AppDestination.InspectionNextSection.route)
+                        navController.navigate(AppDestination.Evidencias.route)
                     },
+                    onBackToLookup = {
+                        navController.popBackStack(
+                            route = AppDestination.VehicleLookup.route,
+                            inclusive = false,
+                        )
+                    },
+                    onSignedOut = {
+                        navController.navigate(AppDestination.Auth.route) {
+                            popUpTo(navController.graph.id) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
+                )
+            }
+            composable(AppDestination.Evidencias.route) { backStackEntry ->
+                val parentEntry = remember(backStackEntry) {
+                    navController.getBackStackEntry(AppDestination.VerificationFlow.route)
+                }
+                val viewModel: InspectionFlowViewModel = hiltViewModel(parentEntry)
+                EvidenciasRoute(
+                    viewModel = viewModel,
+                    onNavigateBack = { navController.popBackStack() },
                     onBackToLookup = {
                         navController.popBackStack(
                             route = AppDestination.VehicleLookup.route,

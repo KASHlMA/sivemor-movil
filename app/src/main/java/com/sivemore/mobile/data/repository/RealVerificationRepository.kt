@@ -19,8 +19,10 @@ class RealVerificationRepository @Inject constructor(
     private val mobileApiService: MobileApiService,
     private val draftResolver: InspectionDraftResolver,
     private val mediaUploadResolver: MediaUploadResolver,
+    private val registrationStore: VehicleRegistrationStore,
 ) : VerificationRepository {
     override suspend fun loadSession(orderUnitId: String): VerificationSession {
+        registrationStore.loadSession(orderUnitId)?.let { return it }
         val inspectionId = draftResolver.resolveInspectionId(orderUnitId)
         val draft = mobileApiService.getInspection(inspectionId)
         draftResolver.remember(orderUnitId, draft.id)
@@ -92,6 +94,7 @@ class RealVerificationRepository @Inject constructor(
         orderUnitId: String,
         value: String,
     ): VerificationSession {
+        registrationStore.updateComments(orderUnitId, value)?.let { return it }
         val inspectionId = draftResolver.resolveInspectionId(orderUnitId)
         return mobileApiService.updateInspection(
             inspectionId = inspectionId,
@@ -104,6 +107,13 @@ class RealVerificationRepository @Inject constructor(
         sectionId: String,
         upload: EvidenceUpload,
     ): VerificationSession {
+        registrationStore.addEvidence(
+            vehicleId = orderUnitId,
+            sectionId = sectionId,
+            evidenceId = "evidence_${System.currentTimeMillis()}",
+            fileName = upload.fileName ?: "evidencia",
+            previewUri = upload.uri,
+        )?.let { return it }
         val inspectionId = draftResolver.resolveInspectionId(orderUnitId)
         return mobileApiService.addEvidence(
             inspectionId = inspectionId,
@@ -117,21 +127,34 @@ class RealVerificationRepository @Inject constructor(
         orderUnitId: String,
         evidenceId: String,
     ): VerificationSession {
+        registrationStore.removeEvidence(orderUnitId, evidenceId)?.let { return it }
         val inspectionId = draftResolver.resolveInspectionId(orderUnitId)
         return mobileApiService.deleteEvidence(inspectionId, evidenceId.toLong()).toDomain()
     }
 
     override suspend fun pauseSession(orderUnitId: String) {
+        registrationStore.loadSession(orderUnitId)?.let {
+            registrationStore.pauseSession(orderUnitId)
+            return
+        }
         val inspectionId = draftResolver.resolveInspectionId(orderUnitId)
         mobileApiService.pauseInspection(inspectionId)
     }
 
     override suspend fun completeSession(orderUnitId: String) {
+        registrationStore.loadSession(orderUnitId)?.let {
+            registrationStore.completeSession(orderUnitId)
+            return
+        }
         val inspectionId = draftResolver.resolveInspectionId(orderUnitId)
         mobileApiService.submitInspection(inspectionId)
     }
 
     override suspend fun abandonSession(orderUnitId: String) {
+        registrationStore.loadSession(orderUnitId)?.let {
+            registrationStore.abandonSession(orderUnitId)
+            return
+        }
         val inspectionId = draftResolver.resolveInspectionId(orderUnitId)
         mobileApiService.abandonInspection(inspectionId)
         draftResolver.forget(orderUnitId)

@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import com.sivemore.mobile.domain.model.AuthCredentials
 import com.sivemore.mobile.domain.model.AuthenticatedUser
 import com.sivemore.mobile.domain.model.EvidenceUpload
+import com.sivemore.mobile.domain.model.Vehicle
 import com.sivemore.mobile.domain.model.VerificationSession
 import com.sivemore.mobile.domain.model.VehicleSummary
 import com.sivemore.mobile.domain.repository.AuthRepository
@@ -55,6 +56,7 @@ class SessionActionsViewModelTest {
         vehicleRepository = object : VehicleRepository {
             override suspend fun loadVehicles(query: String): List<VehicleSummary> = listOf(sampleVehicle())
             override suspend fun loadVehicle(vehicleId: String): VehicleSummary? = sampleVehicle(id = vehicleId)
+            override suspend fun saveVehicle(vehicle: Vehicle): Vehicle = vehicle
         },
         verificationRepository = object : VerificationRepository {
             override suspend fun loadSession(orderUnitId: String): VerificationSession = sampleSession(orderUnitId)

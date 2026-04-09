@@ -79,6 +79,7 @@ data class EvidenceItem(
     val subtitle: String,
     val addedAtLabel: String,
     val accentColor: Long,
+    val previewUri: String? = null,
 )
 
 data class EvidenceUpload(

@@ -17,7 +17,7 @@
 
     <string name="vehicle_menu_title">Menu</string>
     <string name="vehicle_menu_visualization">Visualizacion de vehiculos</string>
-    <string name="vehicle_menu_registration">Registrar unidades</string>
+    <string name="vehicle_menu_registration">Registrar vehiculo</string>
 
     <string name="vehicle_search_title">Visualizacion de vehiculos</string>
     <string name="vehicle_search_description">Consulta los vehiculos asignados al tecnico y abre la verificacion correspondiente.</string>
@@ -88,8 +88,17 @@
     <string name="session_actions_sign_out_message">Se cerrara tu sesion actual en el dispositivo.</string>
     <string name="session_actions_sign_out_confirm">Salir</string>
 
-    <string name="registration_title">Registro de unidades</string>
-    <string name="registration_subtitle">Proximamente podras registrar unidades desde esta pantalla.</string>
+    <string name="registration_title">Registro de vehiculo</string>
+    <string name="registration_subtitle">Captura la informacion obligatoria de la unidad antes de iniciar la evaluacion.</string>
+    <string name="registration_placa">Placa</string>
+    <string name="registration_serie">Serie</string>
+    <string name="registration_cedis">Cedis</string>
+    <string name="registration_numero_cliente">Numero de cliente</string>
+    <string name="registration_save">Guardar vehiculo</string>
+    <string name="registration_menu_back">Volver al menu principal</string>
+    <string name="registration_menu_sign_out">Salir de la cuenta</string>
+    <string name="registration_sign_out_message">&#191;Estas seguro que quieres salir de la cuenta?</string>
+    <string name="registration_sign_out_confirm">Salir</string>
 
     <string name="dialog_cancel">Cancelar</string>
 </resources>

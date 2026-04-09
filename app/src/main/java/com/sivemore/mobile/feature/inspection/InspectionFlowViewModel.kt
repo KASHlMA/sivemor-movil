@@ -208,7 +208,7 @@ class InspectionFlowViewModel @Inject constructor(
     }
 
     private fun addEvidence(upload: EvidenceUpload) {
-        val currentSectionId = uiState.value.currentSection?.id
+        val currentSectionId = uiState.value.currentSection?.id ?: uiState.value.session?.sections?.lastOrNull()?.id
         if (currentSectionId == null) {
             _uiState.update { it.copy(errorMessage = "No hay una seccion activa para agregar evidencia.") }
             return
@@ -217,8 +217,27 @@ class InspectionFlowViewModel @Inject constructor(
             _uiState.update { it.copy(errorMessage = "Se alcanzo el numero maximo de fotos permitidas (3).") }
             return
         }
-        mutate {
-            verificationRepository.addEvidence(vehicleId, currentSectionId, upload)
+        viewModelScope.launch {
+            val previousSession = uiState.value.session
+            runCatching {
+                verificationRepository.addEvidence(vehicleId, currentSectionId, upload)
+            }.onSuccess { session ->
+                _uiState.update {
+                    it.copy(
+                        session = preserveEvidencePreviewUris(
+                            previous = previousSession,
+                            updated = session,
+                            newEvidenceSectionId = currentSectionId,
+                            upload = upload,
+                        ),
+                        errorMessage = null,
+                    )
+                }
+            }.onFailure { failure ->
+                _uiState.update {
+                    it.copy(errorMessage = failure.message ?: "No fue posible actualizar la inspeccion.")
+                }
+            }
         }
     }
 
@@ -228,7 +247,15 @@ class InspectionFlowViewModel @Inject constructor(
         viewModelScope.launch {
             runCatching { mutation() }
                 .onSuccess { session ->
-                    _uiState.update { it.copy(session = session, errorMessage = null) }
+                    _uiState.update {
+                        it.copy(
+                            session = preserveEvidencePreviewUris(
+                                previous = it.session,
+                                updated = session,
+                            ),
+                            errorMessage = null,
+                        )
+                    }
                 }
                 .onFailure { failure ->
                     _uiState.update { it.copy(errorMessage = failure.message ?: "No fue posible actualizar la inspeccion.") }
@@ -320,6 +347,63 @@ class InspectionFlowViewModel @Inject constructor(
     }
 }
 
+private fun preserveEvidencePreviewUris(
+    previous: VerificationSession?,
+    updated: VerificationSession,
+    newEvidenceSectionId: String? = null,
+    upload: EvidenceUpload? = null,
+): VerificationSession {
+    val preservedUris = previous
+        ?.sections
+        .orEmpty()
+        .flatMap { section -> section.evidence }
+        .associate { evidence -> evidence.id to evidence.previewUri }
+
+    val mergedSections = updated.sections.map { section ->
+        section.copy(
+            evidence = section.evidence.map { evidence ->
+                evidence.copy(previewUri = preservedUris[evidence.id])
+            },
+        )
+    }
+
+    val withNewEvidenceUri = if (newEvidenceSectionId == null || upload?.fileName == null) {
+        mergedSections
+    } else {
+        mergedSections.map { section ->
+            if (section.id != newEvidenceSectionId) {
+                section
+            } else {
+                section.copy(
+                    evidence = applyPreviewUriToNewEvidence(
+                        evidence = section.evidence,
+                        fileName = upload.fileName,
+                        previewUri = upload.uri,
+                    ),
+                )
+            }
+        }
+    }
+
+    return updated.copy(sections = withNewEvidenceUri)
+}
+
+private fun applyPreviewUriToNewEvidence(
+    evidence: List<com.sivemore.mobile.domain.model.EvidenceItem>,
+    fileName: String,
+    previewUri: String,
+): List<com.sivemore.mobile.domain.model.EvidenceItem> {
+    var applied = false
+    return evidence.map { item ->
+        if (!applied && item.title == fileName && item.previewUri == null) {
+            applied = true
+            item.copy(previewUri = previewUri)
+        } else {
+            item
+        }
+    }
+}
+
 data class InspectionFlowUiState(
     val vehicleId: String,
     val isLoading: Boolean = true,
@@ -345,6 +429,9 @@ data class InspectionFlowUiState(
 
     val canAddMorePhotos: Boolean
         get() = currentEvidenceCount < 3
+
+    val allEvidence: List<com.sivemore.mobile.domain.model.EvidenceItem>
+        get() = session?.sections.orEmpty().flatMap { it.evidence }
 
     val canGoBack: Boolean
         get() = currentSectionIndex > 0

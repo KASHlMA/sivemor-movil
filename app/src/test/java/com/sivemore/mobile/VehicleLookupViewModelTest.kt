@@ -1,5 +1,6 @@
 package com.sivemore.mobile
 
+import com.sivemore.mobile.domain.model.Vehicle
 import com.sivemore.mobile.domain.model.VehicleSummary
 import com.sivemore.mobile.domain.repository.VehicleRepository
 import com.sivemore.mobile.feature.vehiclelookup.VehicleLookupEvent
@@ -115,5 +116,7 @@ class VehicleLookupViewModelTest {
 
         override suspend fun loadVehicle(vehicleId: String): VehicleSummary? =
             sampleVehicle(id = vehicleId, hasPendingVerification = hasPendingVerification)
+
+        override suspend fun saveVehicle(vehicle: Vehicle): Vehicle = vehicle
     }
 }
