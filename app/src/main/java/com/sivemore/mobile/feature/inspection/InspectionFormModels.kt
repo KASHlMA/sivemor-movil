@@ -138,6 +138,39 @@ object InspectionSectionCatalog {
         InspectionQuestionOption(id = "FAILED", label = "Reprobado"),
     )
 
+    private val cajaDireccionOptions = listOf(
+        InspectionQuestionOption(id = "APPROVED", label = "Aprobado"),
+        InspectionQuestionOption(id = "LEAK", label = "Fuga"),
+    )
+
+    private val depositoAceiteOptions = listOf(
+        InspectionQuestionOption(id = "APPROVED", label = "Aprobado"),
+        InspectionQuestionOption(id = "LEAK", label = "Fuga"),
+    )
+
+    private val parabrisasOptions = listOf(
+        InspectionQuestionOption(id = "APPROVED", label = "Aprobado"),
+        InspectionQuestionOption(id = "CRACKED", label = "Estrellado"),
+    )
+
+    private val limpiaparabrisasOptions = listOf(
+        InspectionQuestionOption(id = "APPROVED", label = "Aprobado"),
+        InspectionQuestionOption(id = "ONE_BLADE_MISSING", label = "Falta 1 pluma"),
+        InspectionQuestionOption(id = "TWO_BLADES_MISSING", label = "Faltan 2 plumas"),
+        InspectionQuestionOption(id = "NOT_WORKING", label = "No funciona"),
+    )
+
+    private val juegoOptions = listOf(
+        InspectionQuestionOption(id = "APPROVED", label = "Aprobado"),
+        InspectionQuestionOption(id = "FAILED", label = "Reprobado"),
+    )
+
+    private val escapeOptions = listOf(
+        InspectionQuestionOption(id = "APPROVED", label = "Aprobado"),
+        InspectionQuestionOption(id = "MISSING", label = "Faltante"),
+        InspectionQuestionOption(id = "BROKEN", label = "Roto"),
+    )
+
     fun lucesSection(): InspectionSectionUiState = InspectionSectionUiState(
         id = "luces",
         title = "Luces",
@@ -317,6 +350,44 @@ object InspectionSectionCatalog {
                 id = "motor_emisiones_gobernado",
                 title = "Gobernado",
                 options = motorEmisionesOptions,
+            ),
+        ),
+    )
+
+    fun otrosSection(): InspectionSectionUiState = InspectionSectionUiState(
+        id = "otros",
+        title = "Otros",
+        description = "Completa la inspección de otros elementos antes de avanzar a la siguiente sección.",
+        questions = listOf(
+            InspectionQuestionItem(
+                id = "otros_caja_direccion",
+                title = "Caja dirección",
+                options = cajaDireccionOptions,
+            ),
+            InspectionQuestionItem(
+                id = "otros_deposito_aceite",
+                title = "Deposito aceite",
+                options = depositoAceiteOptions,
+            ),
+            InspectionQuestionItem(
+                id = "otros_parabrisas",
+                title = "Parabrisas",
+                options = parabrisasOptions,
+            ),
+            InspectionQuestionItem(
+                id = "otros_limpiaparabrisas",
+                title = "Limpiaparabrisas",
+                options = limpiaparabrisasOptions,
+            ),
+            InspectionQuestionItem(
+                id = "otros_juego",
+                title = "Huelgo",
+                options = juegoOptions,
+            ),
+            InspectionQuestionItem(
+                id = "otros_escape",
+                title = "Escape",
+                options = escapeOptions,
             ),
         ),
     )

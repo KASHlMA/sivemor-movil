@@ -331,6 +331,7 @@ private fun AireFrenosScreenPreview() {
                 direccionSection = InspectionSectionCatalog.direccionSection(),
                 aireFrenosSection = InspectionSectionCatalog.aireFrenosSection(),
                 motorEmisionesSection = InspectionSectionCatalog.motorEmisionesSection(),
+                otrosSection = InspectionSectionCatalog.otrosSection(),
             ),
             onAction = {},
             onBack = {},

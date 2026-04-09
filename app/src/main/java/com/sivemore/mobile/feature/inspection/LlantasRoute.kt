@@ -529,6 +529,7 @@ private fun LlantasScreenPreview() {
                 direccionSection = InspectionSectionCatalog.direccionSection(),
                 aireFrenosSection = InspectionSectionCatalog.aireFrenosSection(),
                 motorEmisionesSection = InspectionSectionCatalog.motorEmisionesSection(),
+                otrosSection = InspectionSectionCatalog.otrosSection(),
             ),
             onAction = {},
             onBack = {},

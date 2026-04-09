@@ -291,6 +291,7 @@ private fun LucesScreenPreview() {
                 direccionSection = com.sivemore.mobile.feature.inspection.InspectionSectionCatalog.direccionSection(),
                 aireFrenosSection = com.sivemore.mobile.feature.inspection.InspectionSectionCatalog.aireFrenosSection(),
                 motorEmisionesSection = com.sivemore.mobile.feature.inspection.InspectionSectionCatalog.motorEmisionesSection(),
+                otrosSection = com.sivemore.mobile.feature.inspection.InspectionSectionCatalog.otrosSection(),
             ),
             onAction = {},
             onTakePhoto = {},

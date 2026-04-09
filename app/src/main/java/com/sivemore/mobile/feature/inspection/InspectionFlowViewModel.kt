@@ -35,6 +35,7 @@ class InspectionFlowViewModel @Inject constructor(
             direccionSection = InspectionSectionCatalog.direccionSection(),
             aireFrenosSection = InspectionSectionCatalog.aireFrenosSection(),
             motorEmisionesSection = InspectionSectionCatalog.motorEmisionesSection(),
+            otrosSection = InspectionSectionCatalog.otrosSection(),
         ),
     )
     val uiState: StateFlow<InspectionFlowUiState> = _uiState.asStateFlow()
@@ -59,6 +60,7 @@ class InspectionFlowViewModel @Inject constructor(
             is InspectionFlowAction.AireFrenosOptionSelected -> updateSingleChoiceAnswer("aire_frenos", action.questionId, action.optionId)
             is InspectionFlowAction.AireFrenosNumericValueChanged -> updateNumericAnswer(action.questionId, action.value, "aire_frenos")
             is InspectionFlowAction.MotorEmisionesOptionSelected -> updateSingleChoiceAnswer("motor_emisiones", action.questionId, action.optionId)
+            is InspectionFlowAction.OtrosOptionSelected -> updateSingleChoiceAnswer("otros", action.questionId, action.optionId)
             is InspectionFlowAction.BirloToggled -> updateBirloState(action.groupId, action.birloIndex, action.checked)
             InspectionFlowAction.PreviousClicked -> moveToPreviousSection()
             InspectionFlowAction.NextClicked -> navigateNextIfComplete()
@@ -136,6 +138,11 @@ class InspectionFlowViewModel @Inject constructor(
                     current.motorEmisionesSection.updateQuestion(questionId) { it.copy(selectedOptionId = optionId) }
                 } else {
                     current.motorEmisionesSection
+                },
+                otrosSection = if (sectionId == "otros") {
+                    current.otrosSection.updateQuestion(questionId) { it.copy(selectedOptionId = optionId) }
+                } else {
+                    current.otrosSection
                 },
                 errorMessage = null,
             )
@@ -321,6 +328,7 @@ data class InspectionFlowUiState(
     val direccionSection: InspectionSectionUiState,
     val aireFrenosSection: InspectionSectionUiState,
     val motorEmisionesSection: InspectionSectionUiState,
+    val otrosSection: InspectionSectionUiState,
     val session: VerificationSession? = null,
     val currentSectionIndex: Int = 0,
     val commentDraft: String = "",
@@ -348,13 +356,14 @@ data class InspectionFlowUiState(
             2 -> direccionSection.isComplete
             3 -> aireFrenosSection.isComplete
             4 -> motorEmisionesSection.isComplete
+            5 -> otrosSection.isComplete
             else -> currentSection?.items.orEmpty().all { !it.required || it.selectedOptionId != null }
         }
 
     val isEntireVerificationComplete: Boolean
         get() {
             val remainingSectionsComplete = session?.sections
-                ?.drop(5)
+                ?.drop(6)
                 .orEmpty()
                 .all { section -> section.items.all { !it.required || it.selectedOptionId != null } }
             return lucesSection.isComplete &&
@@ -362,6 +371,7 @@ data class InspectionFlowUiState(
                 direccionSection.isComplete &&
                 aireFrenosSection.isComplete &&
                 motorEmisionesSection.isComplete &&
+                otrosSection.isComplete &&
                 remainingSectionsComplete
         }
 }
@@ -376,6 +386,7 @@ sealed interface InspectionFlowAction {
     data class AireFrenosOptionSelected(val questionId: String, val optionId: String) : InspectionFlowAction
     data class AireFrenosNumericValueChanged(val questionId: String, val value: String) : InspectionFlowAction
     data class MotorEmisionesOptionSelected(val questionId: String, val optionId: String) : InspectionFlowAction
+    data class OtrosOptionSelected(val questionId: String, val optionId: String) : InspectionFlowAction
     data class BirloToggled(val groupId: String, val birloIndex: Int, val checked: Boolean) : InspectionFlowAction
     data object PreviousClicked : InspectionFlowAction
     data object CommentDialogOpened : InspectionFlowAction

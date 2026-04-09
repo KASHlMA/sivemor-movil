@@ -17,6 +17,7 @@ import com.sivemore.mobile.feature.inspection.InspectionNextSectionRoute
 import com.sivemore.mobile.feature.inspection.InspectionFlowViewModel
 import com.sivemore.mobile.feature.inspection.LlantasRoute
 import com.sivemore.mobile.feature.inspection.MotorRoute
+import com.sivemore.mobile.feature.inspection.OtrosRoute
 import com.sivemore.mobile.feature.luces.LucesRoute
 import com.sivemore.mobile.feature.sessionactions.SessionActionsRoute
 import com.sivemore.mobile.feature.vehiclemenu.VehicleMenuRoute
@@ -184,6 +185,31 @@ fun SivemoreNavHost(
                 }
                 val viewModel: InspectionFlowViewModel = hiltViewModel(parentEntry)
                 MotorRoute(
+                    viewModel = viewModel,
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateNext = {
+                        navController.navigate(AppDestination.Otros.route)
+                    },
+                    onBackToLookup = {
+                        navController.popBackStack(
+                            route = AppDestination.VehicleLookup.route,
+                            inclusive = false,
+                        )
+                    },
+                    onSignedOut = {
+                        navController.navigate(AppDestination.Auth.route) {
+                            popUpTo(navController.graph.id) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
+                )
+            }
+            composable(AppDestination.Otros.route) { backStackEntry ->
+                val parentEntry = remember(backStackEntry) {
+                    navController.getBackStackEntry(AppDestination.VerificationFlow.route)
+                }
+                val viewModel: InspectionFlowViewModel = hiltViewModel(parentEntry)
+                OtrosRoute(
                     viewModel = viewModel,
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateNext = {

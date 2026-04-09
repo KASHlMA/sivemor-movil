@@ -67,7 +67,7 @@ fun InspectionNextSectionRoute(
     }
 
     LaunchedEffect(viewModel) {
-        viewModel.onAction(InspectionFlowAction.EnterSection(5))
+        viewModel.onAction(InspectionFlowAction.EnterSection(6))
         viewModel.events.collectLatest { event ->
             when (event) {
                 InspectionFlowEvent.BackToLookup -> onBackToLookup()
@@ -202,6 +202,7 @@ private fun InspectionNextSectionPreview() {
                 direccionSection = InspectionSectionCatalog.direccionSection(),
                 aireFrenosSection = InspectionSectionCatalog.aireFrenosSection(),
                 motorEmisionesSection = InspectionSectionCatalog.motorEmisionesSection(),
+                otrosSection = InspectionSectionCatalog.otrosSection(),
             ),
             onAction = {},
             onTakePhoto = {},
