@@ -48,20 +48,10 @@ class InspectionFlowViewModel @Inject constructor(
             is InspectionFlowAction.EnterSection -> _uiState.update {
                 it.copy(currentSectionIndex = action.index, errorMessage = null)
             }
-            is InspectionFlowAction.LucesOptionSelected -> updateSingleChoiceAnswer(
-                sectionId = "luces",
-                questionId = action.questionId,
-                optionId = action.optionId,
-            )
-            is InspectionFlowAction.LlantasOptionSelected -> updateSingleChoiceAnswer(
-                sectionId = "llantas",
-                questionId = action.questionId,
-                optionId = action.optionId,
-            )
-            is InspectionFlowAction.LlantasNumericValueChanged -> updateNumericAnswer(
-                questionId = action.questionId,
-                value = action.value,
-            )
+            is InspectionFlowAction.LucesOptionSelected -> updateSingleChoiceAnswer("luces", action.questionId, action.optionId)
+            is InspectionFlowAction.LlantasOptionSelected -> updateSingleChoiceAnswer("llantas", action.questionId, action.optionId)
+            is InspectionFlowAction.LlantasNumericValueChanged -> updateNumericAnswer(action.questionId, action.value)
+            is InspectionFlowAction.BirloToggled -> updateBirloState(action.groupId, action.birloIndex, action.checked)
             InspectionFlowAction.PreviousClicked -> moveToPreviousSection()
             InspectionFlowAction.NextClicked -> navigateNextIfComplete()
             InspectionFlowAction.CommentDialogOpened -> _uiState.update { it.copy(showCommentDialog = true, errorMessage = null) }
@@ -115,16 +105,12 @@ class InspectionFlowViewModel @Inject constructor(
         _uiState.update { current ->
             current.copy(
                 lucesSection = if (sectionId == "luces") {
-                    current.lucesSection.updateQuestion(questionId) { question ->
-                        question.copy(selectedOptionId = optionId)
-                    }
+                    current.lucesSection.updateQuestion(questionId) { it.copy(selectedOptionId = optionId) }
                 } else {
                     current.lucesSection
                 },
                 llantasSection = if (sectionId == "llantas") {
-                    current.llantasSection.updateQuestion(questionId) { question ->
-                        question.copy(selectedOptionId = optionId)
-                    }
+                    current.llantasSection.updateQuestion(questionId) { it.copy(selectedOptionId = optionId) }
                 } else {
                     current.llantasSection
                 },
@@ -140,9 +126,20 @@ class InspectionFlowViewModel @Inject constructor(
         val sanitizedValue = value.filter(Char::isDigit)
         _uiState.update { current ->
             current.copy(
-                llantasSection = current.llantasSection.updateQuestion(questionId) { question ->
-                    question.copy(numericValue = sanitizedValue)
-                },
+                llantasSection = current.llantasSection.updateQuestion(questionId) { it.copy(numericValue = sanitizedValue) },
+                errorMessage = null,
+            )
+        }
+    }
+
+    private fun updateBirloState(
+        groupId: String,
+        birloIndex: Int,
+        checked: Boolean,
+    ) {
+        _uiState.update { current ->
+            current.copy(
+                llantasSection = current.llantasSection.updateBirlosGroup(groupId, birloIndex, checked),
                 errorMessage = null,
             )
         }
@@ -150,14 +147,10 @@ class InspectionFlowViewModel @Inject constructor(
 
     private fun moveToPreviousSection() {
         _uiState.update { current ->
-            if (current.currentSectionIndex == 0) {
-                current
-            } else {
-                current.copy(
-                    currentSectionIndex = current.currentSectionIndex - 1,
-                    errorMessage = null,
-                )
-            }
+            if (current.currentSectionIndex == 0) current else current.copy(
+                currentSectionIndex = current.currentSectionIndex - 1,
+                errorMessage = null,
+            )
         }
     }
 
@@ -190,17 +183,10 @@ class InspectionFlowViewModel @Inject constructor(
         viewModelScope.launch {
             runCatching { mutation() }
                 .onSuccess { session ->
-                    _uiState.update {
-                        it.copy(
-                            session = session,
-                            errorMessage = null,
-                        )
-                    }
+                    _uiState.update { it.copy(session = session, errorMessage = null) }
                 }
                 .onFailure { failure ->
-                    _uiState.update {
-                        it.copy(errorMessage = failure.message ?: "No fue posible actualizar la inspeccion.")
-                    }
+                    _uiState.update { it.copy(errorMessage = failure.message ?: "No fue posible actualizar la inspeccion.") }
                 }
         }
     }
@@ -222,19 +208,17 @@ class InspectionFlowViewModel @Inject constructor(
 
     private fun saveComment() {
         viewModelScope.launch {
-            runCatching {
-                persistCommentIfNeeded()
-            }.onSuccess {
-                _uiState.update { it.copy(showCommentDialog = false, errorMessage = null) }
-            }.onFailure { failure ->
-                _uiState.update {
-                    it.copy(
-                        showCommentDialog = true,
-                        isSavingComment = false,
-                        errorMessage = failure.message ?: "No fue posible guardar el comentario.",
-                    )
+            runCatching { persistCommentIfNeeded() }
+                .onSuccess { _uiState.update { it.copy(showCommentDialog = false, errorMessage = null) } }
+                .onFailure { failure ->
+                    _uiState.update {
+                        it.copy(
+                            showCommentDialog = true,
+                            isSavingComment = false,
+                            errorMessage = failure.message ?: "No fue posible guardar el comentario.",
+                        )
+                    }
                 }
-            }
         }
     }
 
@@ -338,6 +322,7 @@ sealed interface InspectionFlowAction {
     data class LucesOptionSelected(val questionId: String, val optionId: String) : InspectionFlowAction
     data class LlantasOptionSelected(val questionId: String, val optionId: String) : InspectionFlowAction
     data class LlantasNumericValueChanged(val questionId: String, val value: String) : InspectionFlowAction
+    data class BirloToggled(val groupId: String, val birloIndex: Int, val checked: Boolean) : InspectionFlowAction
     data object PreviousClicked : InspectionFlowAction
     data object CommentDialogOpened : InspectionFlowAction
     data object CommentDialogDismissed : InspectionFlowAction
@@ -381,3 +366,28 @@ private fun InspectionSectionUiState.updateQuestion(
         },
     )
 }
+
+private fun InspectionSectionUiState.updateBirlosGroup(
+    groupId: String,
+    birloIndex: Int,
+    checked: Boolean,
+): InspectionSectionUiState = copy(
+    groups = groups.map { group ->
+        if (group.id != groupId || group.birlosVisualState == null) {
+            group
+        } else {
+            val birlosState = group.birlosVisualState.birlosState.toMutableList()
+            val evaluated = group.birlosVisualState.evaluated.toMutableList()
+            if (birloIndex in birlosState.indices) {
+                birlosState[birloIndex] = checked
+                evaluated[birloIndex] = true
+            }
+            group.copy(
+                birlosVisualState = group.birlosVisualState.copy(
+                    birlosState = birlosState,
+                    evaluated = evaluated,
+                ),
+            )
+        }
+    },
+)

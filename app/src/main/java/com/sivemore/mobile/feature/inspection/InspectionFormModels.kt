@@ -15,10 +15,20 @@ enum class InspectionIllustrationType {
     Tuercas,
 }
 
+data class BirlosVisualState(
+    val count: Int,
+    val birlosState: List<Boolean>,
+    val evaluated: List<Boolean>,
+) {
+    val isComplete: Boolean
+        get() = evaluated.size == count && evaluated.all { it }
+}
+
 data class InspectionQuestionGroup(
     val id: String,
     val title: String,
     val illustrationType: InspectionIllustrationType? = null,
+    val birlosVisualState: BirlosVisualState? = null,
     val questions: List<InspectionQuestionItem>,
 )
 
@@ -50,10 +60,12 @@ data class InspectionSectionUiState(
         get() = if (groups.isNotEmpty()) groups.flatMap { it.questions } else questions
 
     val isComplete: Boolean
-        get() = allQuestions.all { it.isComplete }
+        get() = allQuestions.all { it.isComplete } && groups.all { it.birlosVisualState?.isComplete ?: true }
 }
 
 object InspectionSectionCatalog {
+    private const val DefaultBirlosCount = 6
+
     private val generalLightOptions = listOf(
         InspectionQuestionOption(id = "APPROVED", label = "Aprobadas"),
         InspectionQuestionOption(id = "LEFT_BURNT", label = "Izquierda fundida"),
@@ -86,12 +98,6 @@ object InspectionSectionCatalog {
         InspectionQuestionOption(id = "LEFT_LEAK", label = "Izquierda con fuga"),
         InspectionQuestionOption(id = "RIGHT_LEAK", label = "Derecha con fuga"),
         InspectionQuestionOption(id = "BOTH_LEAK", label = "Ambas con fuga"),
-    )
-
-    private val birlosOptions = listOf(
-        InspectionQuestionOption(id = "APPROVED", label = "Aprobados"),
-        InspectionQuestionOption(id = "BROKEN", label = "Rotos"),
-        InspectionQuestionOption(id = "MISSING", label = "Faltantes"),
     )
 
     private val tuercasOptions = listOf(
@@ -177,20 +183,12 @@ object InspectionSectionCatalog {
                 id = "llantas_birlos",
                 title = "Birlos",
                 illustrationType = InspectionIllustrationType.Birlos,
-                questions = listOf(
-                    InspectionQuestionItem(id = "llantas_birlos_delantera_izquierda", title = "Llantas birlos delantera izquierda", options = birlosOptions),
-                    numericQuestion("llantas_birlos_faltantes_delantera_izquierda", "Birlos faltantes delantera izquierda", "Ingresa la cantidad de birlos faltantes:"),
-                    numericQuestion("llantas_birlos_rotos_delantera_izquierda", "Birlos rotos delantera izquierda", "Ingresa la cantidad de birlos rotos:"),
-                    InspectionQuestionItem(id = "llantas_birlos_delantera_derecha", title = "Llantas birlos delantera derecha", options = birlosOptions),
-                    numericQuestion("llantas_birlos_faltantes_delantera_derecha", "Birlos faltantes delantera derecha", "Ingresa la cantidad de birlos faltantes:"),
-                    numericQuestion("llantas_birlos_rotos_delantera_derecha", "Birlos rotos delantera derecha", "Ingresa la cantidad de birlos rotos:"),
-                    InspectionQuestionItem(id = "llantas_birlos_trasera_izquierda", title = "Llantas birlos trasera izquierda", options = birlosOptions),
-                    numericQuestion("llantas_birlos_faltantes_trasera_izquierda", "Birlos faltantes trasera izquierda", "Ingresa la cantidad de birlos faltantes:"),
-                    numericQuestion("llantas_birlos_rotos_trasera_izquierda", "Birlos rotos trasera izquierda", "Ingresa la cantidad de birlos rotos:"),
-                    InspectionQuestionItem(id = "llantas_birlos_trasera_derecha", title = "Llantas birlos trasera derecha", options = birlosOptions),
-                    numericQuestion("llantas_birlos_faltantes_trasera_derecha", "Birlos faltantes trasera derecha", "Ingresa la cantidad de birlos faltantes:"),
-                    numericQuestion("llantas_birlos_rotos_trasera_derecha", "Birlos rotos trasera derecha", "Ingresa la cantidad de birlos rotos:"),
+                birlosVisualState = BirlosVisualState(
+                    count = DefaultBirlosCount,
+                    birlosState = List(DefaultBirlosCount) { false },
+                    evaluated = List(DefaultBirlosCount) { false },
                 ),
+                questions = emptyList(),
             ),
             InspectionQuestionGroup(
                 id = "llantas_tuercas",
