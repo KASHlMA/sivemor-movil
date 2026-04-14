@@ -1,5 +1,6 @@
 package com.sivemore.mobile
 
+import androidx.lifecycle.SavedStateHandle
 import com.sivemore.mobile.domain.model.AuthCredentials
 import com.sivemore.mobile.domain.model.AuthenticatedUser
 import com.sivemore.mobile.domain.model.Vehicle
@@ -30,6 +31,7 @@ class VehicleViewModelTest {
     fun saveVehicleEmitsEventWhenFormIsValid() = runTest {
         val repository = RecordingVehicleRepository()
         val viewModel = VehicleViewModel(
+            savedStateHandle = SavedStateHandle(),
             vehicleRepository = repository,
             authRepository = RecordingAuthRepository(),
         )
@@ -50,6 +52,7 @@ class VehicleViewModelTest {
     @Test
     fun saveVehicleValidatesRequiredFields() = runTest {
         val viewModel = VehicleViewModel(
+            savedStateHandle = SavedStateHandle(),
             vehicleRepository = RecordingVehicleRepository(),
             authRepository = RecordingAuthRepository(),
         )
@@ -66,6 +69,7 @@ class VehicleViewModelTest {
     fun backToMenuEmitsEventWithoutSigningOut() = runTest {
         val authRepository = RecordingAuthRepository()
         val viewModel = VehicleViewModel(
+            savedStateHandle = SavedStateHandle(),
             vehicleRepository = RecordingVehicleRepository(),
             authRepository = authRepository,
         )
@@ -82,6 +86,7 @@ class VehicleViewModelTest {
     fun signOutFlowShowsDialogAndSignsOutOnConfirm() = runTest {
         val authRepository = RecordingAuthRepository()
         val viewModel = VehicleViewModel(
+            savedStateHandle = SavedStateHandle(),
             vehicleRepository = RecordingVehicleRepository(),
             authRepository = authRepository,
         )
@@ -98,12 +103,42 @@ class VehicleViewModelTest {
         assertFalse(viewModel.uiState.value.showSignOutDialog)
     }
 
-    private class RecordingVehicleRepository : VehicleRepository {
+    @Test
+    fun existingVehicleLoadsIntoFormForEditing() = runTest {
+        val existingVehicle = Vehicle(
+            id = "vehicle-1",
+            numeroEconomico = "1500",
+            placas = "MOR-TQ8-452",
+            marca = "Morelos",
+            modelo = "",
+            tipoVehiculo = "",
+            vin = "4S3BMMB68B3286050",
+        )
+        val repository = RecordingVehicleRepository(existingVehicle = existingVehicle)
+        val viewModel = VehicleViewModel(
+            savedStateHandle = SavedStateHandle(mapOf("vehicleId" to "vehicle-1")),
+            vehicleRepository = repository,
+            authRepository = RecordingAuthRepository(),
+        )
+
+        advanceUntilIdle()
+
+        assertEquals("MOR-TQ8-452", viewModel.uiState.value.placa.value)
+        assertEquals("Morelos", viewModel.uiState.value.cedis.value)
+        assertEquals("1500", viewModel.uiState.value.numeroCliente.value)
+        assertTrue(viewModel.uiState.value.isEditing)
+    }
+
+    private class RecordingVehicleRepository(
+        private val existingVehicle: Vehicle? = null,
+    ) : VehicleRepository {
         var savedVehicle: Vehicle? = null
 
         override suspend fun loadVehicles(query: String): List<VehicleSummary> = emptyList()
 
         override suspend fun loadVehicle(vehicleId: String): VehicleSummary? = null
+
+        override suspend fun loadVehicleForEdit(vehicleId: String): Vehicle? = existingVehicle
 
         override suspend fun saveVehicle(vehicle: Vehicle): Vehicle {
             savedVehicle = vehicle

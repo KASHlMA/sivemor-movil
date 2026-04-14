@@ -38,6 +38,10 @@ class VehicleRegistrationStore @Inject constructor() {
         vehicles[vehicleId]?.toSummary(admissionDate = todayLabel())
     }
 
+    suspend fun loadEditableVehicle(vehicleId: String): Vehicle? = mutex.withLock {
+        vehicles[vehicleId]
+    }
+
     suspend fun loadSession(vehicleId: String): VerificationSession? = mutex.withLock {
         sessions[vehicleId]
     }

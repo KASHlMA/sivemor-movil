@@ -97,6 +97,18 @@ class VehicleLookupViewModelTest {
         assertTrue(!viewModel.uiState.value.isRefreshing)
     }
 
+    @Test
+    fun editVehicleSelectionEmitsEditEvent() = runTest {
+        val viewModel = VehicleLookupViewModel(vehicleRepository = StubVehicleRepository())
+        advanceUntilIdle()
+        val event = async { viewModel.events.first() }
+
+        viewModel.onAction(VehicleLookupUiAction.EditVehicleTapped("1"))
+        advanceUntilIdle()
+
+        assertEquals(VehicleLookupEvent.OpenVehicleEdit("1"), event.await())
+    }
+
     private class StubVehicleRepository(
         private val hasPendingVerification: Boolean = false,
         private val refreshGate: CompletableDeferred<Unit>? = null,
@@ -116,6 +128,8 @@ class VehicleLookupViewModelTest {
 
         override suspend fun loadVehicle(vehicleId: String): VehicleSummary? =
             sampleVehicle(id = vehicleId, hasPendingVerification = hasPendingVerification)
+
+        override suspend fun loadVehicleForEdit(vehicleId: String): Vehicle? = null
 
         override suspend fun saveVehicle(vehicle: Vehicle): Vehicle = vehicle
     }

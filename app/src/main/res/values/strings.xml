@@ -35,6 +35,7 @@
     <string name="vehicle_card_admission_date">Fecha de ingreso</string>
     <string name="vehicle_card_completed_date">Finalizado</string>
     <string name="vehicle_card_pending">Pendiente</string>
+    <string name="vehicle_card_edit">Editar</string>
     <string name="luces_next_button">Siguiente</string>
     <string name="inspection_next_section_title">Siguiente seccion</string>
     <string name="inspection_next_section_message">La siguiente seccion del formulario se implementara en una iteracion posterior. La seccion Luces ya quedo completa y lista para integrarse al flujo total.</string>
@@ -89,12 +90,14 @@
     <string name="session_actions_sign_out_confirm">Salir</string>
 
     <string name="registration_title">Registro de vehiculo</string>
+    <string name="registration_edit_title">Editar vehiculo</string>
     <string name="registration_subtitle">Captura la informacion obligatoria de la unidad antes de iniciar la evaluacion.</string>
     <string name="registration_placa">Placa</string>
     <string name="registration_serie">Serie</string>
     <string name="registration_cedis">Cedis</string>
     <string name="registration_numero_cliente">Numero de cliente</string>
     <string name="registration_save">Guardar vehiculo</string>
+    <string name="registration_update">Actualizar vehiculo</string>
     <string name="registration_menu_back">Volver al menu principal</string>
     <string name="registration_menu_sign_out">Salir de la cuenta</string>
     <string name="registration_sign_out_message">&#191;Estas seguro que quieres salir de la cuenta?</string>

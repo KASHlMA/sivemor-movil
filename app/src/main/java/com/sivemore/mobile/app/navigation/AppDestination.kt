@@ -6,7 +6,14 @@ sealed class AppDestination(
     data object Auth : AppDestination(route = "auth")
     data object VehicleMenu : AppDestination(route = "vehicle_menu")
     data object VehicleLookup : AppDestination(route = "vehicle_lookup")
-    data object VehicleRegistration : AppDestination(route = "vehicle_registration")
+    data object VehicleRegistration : AppDestination(route = "vehicle_registration?vehicleId={vehicleId}") {
+        fun createRoute(vehicleId: String? = null): String =
+            if (vehicleId.isNullOrBlank()) {
+                "vehicle_registration"
+            } else {
+                "vehicle_registration?vehicleId=$vehicleId"
+            }
+    }
     data object VerificationFlow : AppDestination(route = "verification_flow/{vehicleId}") {
         fun createRoute(vehicleId: String): String = "verification_flow/$vehicleId"
     }
@@ -27,22 +34,22 @@ sealed class AppDestination(
     }
 
     companion object {
-        fun fromRoute(route: String?): AppDestination? = when (route) {
-            Auth.route -> Auth
-            VehicleMenu.route -> VehicleMenu
-            VehicleLookup.route -> VehicleLookup
-            VehicleRegistration.route -> VehicleRegistration
-            VerificationFlow.route -> VerificationFlow
-            Luces.route -> Luces
-            Llantas.route -> Llantas
-            Direccion.route -> Direccion
-            AireFrenos.route -> AireFrenos
-            Motor.route -> Motor
-            Otros.route -> Otros
-            Evidencias.route -> Evidencias
-            InspectionNextSection.route -> InspectionNextSection
-            Verification.route -> Verification
-            SessionActions.route -> SessionActions
+        fun fromRoute(route: String?): AppDestination? = when {
+            route == Auth.route -> Auth
+            route == VehicleMenu.route -> VehicleMenu
+            route == VehicleLookup.route -> VehicleLookup
+            route?.startsWith("vehicle_registration") == true -> VehicleRegistration
+            route == VerificationFlow.route -> VerificationFlow
+            route == Luces.route -> Luces
+            route == Llantas.route -> Llantas
+            route == Direccion.route -> Direccion
+            route == AireFrenos.route -> AireFrenos
+            route == Motor.route -> Motor
+            route == Otros.route -> Otros
+            route == Evidencias.route -> Evidencias
+            route == InspectionNextSection.route -> InspectionNextSection
+            route == Verification.route -> Verification
+            route == SessionActions.route -> SessionActions
             else -> null
         }
     }

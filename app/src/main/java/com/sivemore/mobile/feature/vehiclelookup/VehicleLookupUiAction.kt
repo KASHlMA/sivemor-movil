@@ -7,6 +7,7 @@ sealed interface VehicleLookupUiAction {
     data class QueryChanged(val value: String) : VehicleLookupUiAction
     data object SearchSubmitted : VehicleLookupUiAction
     data class VehicleTapped(val vehicleId: String) : VehicleLookupUiAction
+    data class EditVehicleTapped(val vehicleId: String) : VehicleLookupUiAction
     data object PendingDialogDismissed : VehicleLookupUiAction
     data object PendingDialogConfirmed : VehicleLookupUiAction
 }
@@ -22,4 +23,5 @@ data class VehicleLookupUiState(
 
 sealed interface VehicleLookupEvent {
     data class OpenVerification(val vehicleId: String) : VehicleLookupEvent
+    data class OpenVehicleEdit(val vehicleId: String) : VehicleLookupEvent
 }

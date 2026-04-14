@@ -1,5 +1,6 @@
 package com.sivemore.mobile.feature.vehicleregistration
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sivemore.mobile.domain.model.Vehicle
@@ -18,14 +19,27 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class VehicleViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val vehicleRepository: VehicleRepository,
     private val authRepository: AuthRepository,
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow(VehicleRegistrationUiState())
+    private val vehicleId: String? = savedStateHandle["vehicleId"]
+    private val _uiState = MutableStateFlow(
+        VehicleRegistrationUiState(
+            vehicleId = vehicleId,
+            isLoading = !vehicleId.isNullOrBlank(),
+        ),
+    )
     val uiState: StateFlow<VehicleRegistrationUiState> = _uiState.asStateFlow()
 
     private val _events = MutableSharedFlow<VehicleRegistrationEvent>()
     val events: SharedFlow<VehicleRegistrationEvent> = _events.asSharedFlow()
+
+    init {
+        if (!vehicleId.isNullOrBlank()) {
+            loadVehicleForEdit(vehicleId)
+        }
+    }
 
     fun onAction(action: VehicleRegistrationUiAction) {
         when (action) {
@@ -111,7 +125,7 @@ class VehicleViewModel @Inject constructor(
             runCatching {
                 vehicleRepository.saveVehicle(
                     Vehicle(
-                        id = "local-${System.currentTimeMillis()}",
+                        id = validatedState.vehicleId ?: "local-${System.currentTimeMillis()}",
                         numeroEconomico = validatedState.numeroCliente.value,
                         placas = validatedState.placa.value,
                         marca = validatedState.cedis.value,
@@ -128,6 +142,43 @@ class VehicleViewModel @Inject constructor(
                     it.copy(
                         isSaving = false,
                         globalErrorMessage = failure.message ?: "No fue posible guardar el vehiculo.",
+                    )
+                }
+            }
+        }
+    }
+
+    private fun loadVehicleForEdit(vehicleId: String) {
+        viewModelScope.launch {
+            runCatching {
+                vehicleRepository.loadVehicleForEdit(vehicleId)
+            }.onSuccess { vehicle ->
+                if (vehicle == null) {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            globalErrorMessage = "No fue posible cargar la informacion del vehiculo.",
+                        )
+                    }
+                    return@launch
+                }
+
+                _uiState.update {
+                    it.copy(
+                        vehicleId = vehicle.id,
+                        placa = VehicleFormFieldState(value = vehicle.placas),
+                        serie = VehicleFormFieldState(value = vehicle.vin),
+                        cedis = VehicleFormFieldState(value = vehicle.marca),
+                        numeroCliente = VehicleFormFieldState(value = vehicle.numeroEconomico),
+                        isLoading = false,
+                        globalErrorMessage = null,
+                    )
+                }
+            }.onFailure { failure ->
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        globalErrorMessage = failure.message ?: "No fue posible cargar la informacion del vehiculo.",
                     )
                 }
             }

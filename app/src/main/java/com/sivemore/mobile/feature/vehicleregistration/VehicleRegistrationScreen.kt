@@ -30,6 +30,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sivemore.mobile.R
 import com.sivemore.mobile.app.designsystem.BrandedHeader
+import com.sivemore.mobile.app.designsystem.BrandedLoadingScreen
 import com.sivemore.mobile.app.designsystem.ConfirmationDialog
 import com.sivemore.mobile.app.designsystem.LoginFooterDecoration
 import com.sivemore.mobile.app.designsystem.SivemorePrimaryButton
@@ -72,6 +73,11 @@ fun VehicleRegistrationScreen(
     modifier: Modifier = Modifier,
 ) {
     val spacing = SivemoreThemeTokens.spacing
+
+    if (state.isLoading) {
+        BrandedLoadingScreen(modifier = modifier)
+        return
+    }
 
     Box(
         modifier = modifier
@@ -117,7 +123,13 @@ fun VehicleRegistrationScreen(
                 verticalArrangement = Arrangement.spacedBy(spacing.md),
             ) {
                 Text(
-                    text = stringResource(R.string.registration_title),
+                    text = stringResource(
+                        if (state.isEditing) {
+                            R.string.registration_edit_title
+                        } else {
+                            R.string.registration_title
+                        },
+                    ),
                     style = MaterialTheme.typography.headlineLarge,
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.testTag("vehicle_registration_title"),
@@ -170,7 +182,13 @@ fun VehicleRegistrationScreen(
                 }
 
                 SivemorePrimaryButton(
-                    text = stringResource(R.string.registration_save),
+                    text = stringResource(
+                        if (state.isEditing) {
+                            R.string.registration_update
+                        } else {
+                            R.string.registration_save
+                        },
+                    ),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(58.dp)

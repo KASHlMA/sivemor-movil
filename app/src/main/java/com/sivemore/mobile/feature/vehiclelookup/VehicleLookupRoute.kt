@@ -37,6 +37,7 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun VehicleLookupRoute(
     onOpenVerification: (String) -> Unit,
+    onEditVehicle: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: VehicleLookupViewModel = hiltViewModel(),
 ) {
@@ -44,8 +45,9 @@ fun VehicleLookupRoute(
 
     LaunchedEffect(viewModel) {
         viewModel.events.collectLatest { event ->
-            if (event is VehicleLookupEvent.OpenVerification) {
-                onOpenVerification(event.vehicleId)
+            when (event) {
+                is VehicleLookupEvent.OpenVerification -> onOpenVerification(event.vehicleId)
+                is VehicleLookupEvent.OpenVehicleEdit -> onEditVehicle(event.vehicleId)
             }
         }
     }
@@ -137,6 +139,7 @@ fun VehicleLookupScreen(
                             completedDate = vehicle.completedDate,
                             status = vehicle.status,
                             onClick = { onAction(VehicleLookupUiAction.VehicleTapped(vehicle.id)) },
+                            onEditClick = { onAction(VehicleLookupUiAction.EditVehicleTapped(vehicle.id)) },
                             modifier = Modifier.testTag("vehicle_card_${vehicle.id}"),
                         )
                     }

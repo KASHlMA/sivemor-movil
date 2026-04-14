@@ -35,6 +35,7 @@ class VehicleLookupViewModel @Inject constructor(
             VehicleLookupUiAction.PendingDialogDismissed -> _uiState.update { it.copy(pendingVehicle = null) }
             VehicleLookupUiAction.PendingDialogConfirmed -> continuePendingVehicle()
             is VehicleLookupUiAction.QueryChanged -> _uiState.update { it.copy(query = action.value) }
+            is VehicleLookupUiAction.EditVehicleTapped -> openVehicleEdit(action.vehicleId)
             is VehicleLookupUiAction.VehicleTapped -> onVehicleTapped(action.vehicleId)
         }
     }
@@ -87,6 +88,12 @@ class VehicleLookupViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(pendingVehicle = null) }
             _events.emit(VehicleLookupEvent.OpenVerification(pendingVehicle.id))
+        }
+    }
+
+    private fun openVehicleEdit(vehicleId: String) {
+        viewModelScope.launch {
+            _events.emit(VehicleLookupEvent.OpenVehicleEdit(vehicleId))
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.sivemore.mobile.data.repository
 
 import com.sivemore.mobile.data.network.MobileApiService
+import com.sivemore.mobile.data.network.toEditableVehicle
 import com.sivemore.mobile.data.network.toDomain
 import com.sivemore.mobile.domain.model.Vehicle
 import com.sivemore.mobile.domain.model.VehicleSummary
@@ -17,7 +18,7 @@ class RealVehicleRepository @Inject constructor(
         val normalizedQuery = query.trim()
         val remoteVehicles = mobileApiService.listOrders().map { it.toDomain() }
         val localVehicles = registrationStore.loadVehicles()
-        val vehicles = localVehicles + remoteVehicles
+        val vehicles = (localVehicles + remoteVehicles).distinctBy { it.id }
         if (normalizedQuery.isBlank()) return vehicles
         return vehicles.filter { vehicle ->
             listOf(vehicle.plates, vehicle.serialNumber, vehicle.vehicleNumber)
@@ -30,6 +31,12 @@ class RealVehicleRepository @Inject constructor(
             ?: mobileApiService.listOrders()
                 .map { it.toDomain() }
                 .firstOrNull { it.id == vehicleId }
+
+    override suspend fun loadVehicleForEdit(vehicleId: String): Vehicle? =
+        registrationStore.loadEditableVehicle(vehicleId)
+            ?: mobileApiService.listOrders()
+                .firstOrNull { it.orderUnitId.toString() == vehicleId }
+                ?.toEditableVehicle()
 
     override suspend fun saveVehicle(vehicle: Vehicle): Vehicle =
         registrationStore.saveVehicle(vehicle)

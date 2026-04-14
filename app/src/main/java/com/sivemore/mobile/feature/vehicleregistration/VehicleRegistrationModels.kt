@@ -6,15 +6,20 @@ data class VehicleFormFieldState(
 )
 
 data class VehicleRegistrationUiState(
+    val vehicleId: String? = null,
     val placa: VehicleFormFieldState = VehicleFormFieldState(),
     val serie: VehicleFormFieldState = VehicleFormFieldState(),
     val cedis: VehicleFormFieldState = VehicleFormFieldState(),
     val numeroCliente: VehicleFormFieldState = VehicleFormFieldState(),
+    val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     val showOptionsMenu: Boolean = false,
     val showSignOutDialog: Boolean = false,
     val globalErrorMessage: String? = null,
 ) {
+    val isEditing: Boolean
+        get() = !vehicleId.isNullOrBlank()
+
     val isFormValid: Boolean
         get() = placa.value.isNotBlank() &&
             serie.value.isNotBlank() &&

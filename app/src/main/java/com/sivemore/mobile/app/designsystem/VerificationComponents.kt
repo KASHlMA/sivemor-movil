@@ -315,6 +315,7 @@ fun VehicleResultCard(
     completedDate: String?,
     status: VehicleStatus,
     onClick: () -> Unit,
+    onEditClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     VerificationCard(
@@ -372,6 +373,20 @@ fun VehicleResultCard(
                     style = MaterialTheme.typography.bodyMedium,
                     color = Ink,
                 )
+            }
+        }
+
+        if (onEditClick != null) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                TextButton(
+                    onClick = onEditClick,
+                    modifier = Modifier.testTag("vehicle_edit_button"),
+                ) {
+                    Text(stringResource(R.string.vehicle_card_edit))
+                }
             }
         }
     }

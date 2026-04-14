@@ -54,7 +54,7 @@ fun SivemoreNavHost(
                     }
                 },
                 onOpenVehicleRegistration = {
-                    navController.navigate(AppDestination.VehicleRegistration.route) {
+                    navController.navigate(AppDestination.VehicleRegistration.createRoute()) {
                         launchSingleTop = true
                     }
                 },
@@ -71,9 +71,23 @@ fun SivemoreNavHost(
                 onOpenVerification = { vehicleId ->
                     navController.navigate(AppDestination.VerificationFlow.createRoute(vehicleId))
                 },
+                onEditVehicle = { vehicleId ->
+                    navController.navigate(AppDestination.VehicleRegistration.createRoute(vehicleId)) {
+                        launchSingleTop = true
+                    }
+                },
             )
         }
-        composable(AppDestination.VehicleRegistration.route) {
+        composable(
+            route = AppDestination.VehicleRegistration.route,
+            arguments = listOf(
+                navArgument("vehicleId") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+            ),
+        ) {
             VehicleRegistrationRoute(
                 onBackToMenu = {
                     navController.popBackStack(

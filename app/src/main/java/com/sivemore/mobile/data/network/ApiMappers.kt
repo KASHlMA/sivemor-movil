@@ -7,6 +7,7 @@ import com.sivemore.mobile.domain.model.InspectionOption
 import com.sivemore.mobile.domain.model.InspectionSection
 import com.sivemore.mobile.domain.model.VerificationSession
 import com.sivemore.mobile.domain.model.VerificationSessionStatus
+import com.sivemore.mobile.domain.model.Vehicle
 import com.sivemore.mobile.domain.model.VehicleStatus
 import com.sivemore.mobile.domain.model.VehicleSummary
 import java.time.Instant
@@ -33,6 +34,16 @@ fun AssignedOrderDto.toDomain(): VehicleSummary = VehicleSummary(
     completedDate = regionName,
     hasPendingVerification = draftInspectionId != null,
     draftInspectionId = draftInspectionId?.toString(),
+)
+
+fun AssignedOrderDto.toEditableVehicle(): Vehicle = Vehicle(
+    id = orderUnitId.toString(),
+    numeroEconomico = clientCompanyName,
+    placas = vehiclePlate,
+    marca = regionName,
+    modelo = "",
+    tipoVehiculo = vehicleCategory,
+    vin = orderNumber,
 )
 
 fun InspectionDraftDto.toDomain(): VerificationSession = VerificationSession(
