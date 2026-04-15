@@ -131,15 +131,7 @@ fun AuthScreen(
                 label = { Text(stringResource(R.string.auth_password_label)) },
                 singleLine = true,
             )
-            Text(
-                text = state.errorMessage ?: stringResource(R.string.auth_helper),
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (state.errorMessage != null) {
-                    MaterialTheme.colorScheme.error
-                } else {
-                    MutedText
-                },
-            )
+
             if (state.diagnosticMessage != null) {
                 Text(
                     text = state.diagnosticMessage,
