@@ -14,16 +14,24 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -31,7 +39,6 @@ import com.sivemore.mobile.R
 import com.sivemore.mobile.app.designsystem.BrandedLoadingScreen
 import com.sivemore.mobile.app.designsystem.Ink
 import com.sivemore.mobile.app.designsystem.LoginFooterDecoration
-import com.sivemore.mobile.app.designsystem.MutedText
 import com.sivemore.mobile.app.designsystem.SivemoreTheme
 import com.sivemore.mobile.app.designsystem.SivemoreThemeTokens
 import com.sivemore.mobile.app.designsystem.Surface
@@ -68,6 +75,7 @@ fun AuthScreen(
     modifier: Modifier = Modifier,
 ) {
     val spacing = SivemoreThemeTokens.spacing
+    var isPasswordVisible by rememberSaveable { mutableStateOf(false) }
 
     if (state.isLoading) {
         BrandedLoadingScreen(modifier = modifier)
@@ -128,8 +136,44 @@ fun AuthScreen(
                     .fillMaxWidth()
                     .testTag("auth_password"),
                 label = { Text(stringResource(R.string.auth_password_label)) },
+                visualTransformation = if (isPasswordVisible) {
+                    VisualTransformation.None
+                } else {
+                    PasswordVisualTransformation()
+                },
+                trailingIcon = {
+                    IconButton(
+                        onClick = { isPasswordVisible = !isPasswordVisible },
+                        modifier = Modifier.testTag("auth_password_toggle"),
+                    ) {
+                        Icon(
+                            painter = painterResource(
+                                if (isPasswordVisible) {
+                                    R.drawable.ic_visibility_off
+                                } else {
+                                    R.drawable.ic_visibility
+                                },
+                            ),
+                            contentDescription = stringResource(
+                                if (isPasswordVisible) {
+                                    R.string.auth_hide_password
+                                } else {
+                                    R.string.auth_show_password
+                                },
+                            ),
+                        )
+                    }
+                },
                 singleLine = true,
             )
+
+            state.errorMessage?.let { message ->
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
 
             if (state.diagnosticMessage != null) {
                 Text(
