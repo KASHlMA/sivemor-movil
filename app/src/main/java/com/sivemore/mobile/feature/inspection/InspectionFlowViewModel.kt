@@ -155,7 +155,7 @@ class InspectionFlowViewModel @Inject constructor(
         value: String,
         sectionId: String,
     ) {
-        val sanitizedValue = value.filter(Char::isDigit)
+        val sanitizedValue = sanitizeDecimalInput(value)
         _uiState.update { current ->
             current.copy(
                 llantasSection = if (sectionId == "llantas") {
@@ -318,7 +318,13 @@ class InspectionFlowViewModel @Inject constructor(
     private fun completeVerification() {
         if (!uiState.value.isEntireVerificationComplete) {
             _uiState.update {
-                it.copy(errorMessage = "Debes completar todas las secciones antes de finalizar la verificacion.")
+                it.copy(
+                    errorMessage = if (it.totalEvidenceCount < 3) {
+                        "Debes agregar al menos 3 evidencias antes de finalizar la verificacion."
+                    } else {
+                        "Debes completar todas las secciones antes de finalizar la verificacion."
+                    }
+                )
             }
             return
         }
@@ -446,6 +452,28 @@ private fun String.toBackendAnswer(): String = when (this) {
     else -> "FAIL"
 }
 
+internal fun sanitizeDecimalInput(value: String): String {
+    val trimmed = value.trim()
+    val builder = StringBuilder(trimmed.length)
+    var hasDecimalSeparator = false
+
+    trimmed.forEachIndexed { index, char ->
+        when {
+            char.isDigit() -> builder.append(char)
+            char == '.' && !hasDecimalSeparator && builder.isNotEmpty() -> {
+                builder.append(char)
+                hasDecimalSeparator = true
+            }
+            char == '.' && !hasDecimalSeparator && builder.isEmpty() && index == 0 -> {
+                builder.append("0.")
+                hasDecimalSeparator = true
+            }
+        }
+    }
+
+    return builder.toString()
+}
+
 data class InspectionFlowUiState(
     val vehicleId: String,
     val isLoading: Boolean = true,
@@ -475,6 +503,9 @@ data class InspectionFlowUiState(
     val allEvidence: List<com.sivemore.mobile.domain.model.EvidenceItem>
         get() = session?.sections.orEmpty().flatMap { it.evidence }
 
+    val totalEvidenceCount: Int
+        get() = allEvidence.size
+
     val canGoBack: Boolean
         get() = currentSectionIndex > 0
 
@@ -501,7 +532,8 @@ data class InspectionFlowUiState(
                 aireFrenosSection.isComplete &&
                 motorEmisionesSection.isComplete &&
                 otrosSection.isComplete &&
-                remainingSectionsComplete
+                remainingSectionsComplete &&
+                totalEvidenceCount >= 3
         }
 }
 

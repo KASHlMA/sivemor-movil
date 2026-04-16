@@ -68,6 +68,20 @@ internal fun sampleSession(orderUnitId: String = "1"): VerificationSession = Ver
                     addedAtLabel = "23/03/2026 12:00",
                     accentColor = 0xFFD7EAD8,
                 ),
+                EvidenceItem(
+                    id = "e2",
+                    title = "photo-2.jpg",
+                    subtitle = "image/jpeg",
+                    addedAtLabel = "23/03/2026 12:05",
+                    accentColor = 0xFFE9E0CB,
+                ),
+                EvidenceItem(
+                    id = "e3",
+                    title = "photo-3.jpg",
+                    subtitle = "image/jpeg",
+                    addedAtLabel = "23/03/2026 12:10",
+                    accentColor = 0xFFD7EAD8,
+                ),
             ),
         ),
         InspectionSection(
@@ -93,7 +107,7 @@ internal fun sampleSession(orderUnitId: String = "1"): VerificationSession = Ver
     ),
     comments = "",
     updatedAtLabel = "23/03/2026 12:00",
-    evidenceCount = 1,
+    evidenceCount = 3,
 )
 
 internal fun sampleIncompleteSession(orderUnitId: String = "1"): VerificationSession = sampleSession(orderUnitId).let { session ->

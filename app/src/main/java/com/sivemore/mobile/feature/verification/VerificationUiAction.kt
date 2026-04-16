@@ -47,13 +47,14 @@ data class VerificationUiState(
     val commentDraft: String = "",
     val errorMessage: String? = null,
 ) {
+    val totalEvidenceCount: Int = session?.sections.orEmpty().sumOf { it.evidence.size }
     val currentSection = session?.sections?.getOrNull(currentSectionIndex)
     val canGoNext: Boolean = currentSectionIndex < (session?.sections?.lastIndex ?: -1) &&
         currentSection?.items.orEmpty().all { !it.required || it.selectedOptionId != null }
     val canAddMorePhotos: Boolean = currentSection?.evidence?.size?.let { it < 3 } ?: false
     val isEntireVerificationComplete: Boolean = session?.sections.orEmpty().all { section ->
         section.items.all { !it.required || it.selectedOptionId != null }
-    }
+    } && totalEvidenceCount >= 3
 }
 
 sealed interface VerificationEvent {

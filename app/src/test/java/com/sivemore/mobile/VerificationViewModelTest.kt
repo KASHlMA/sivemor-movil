@@ -70,7 +70,7 @@ class VerificationViewModelTest {
         viewModel.onAction(VerificationUiAction.RemoveEvidence("e1"))
         advanceUntilIdle()
 
-        assertEquals(0, viewModel.uiState.value.session?.sections?.first()?.evidence?.size)
+        assertEquals(2, viewModel.uiState.value.session?.sections?.first()?.evidence?.size)
     }
 
     @Test

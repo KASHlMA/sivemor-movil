@@ -337,7 +337,7 @@ private fun LlantasInspectionCard(
                         .fillMaxWidth()
                         .testTag("llantas_numeric_${question.id}"),
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     placeholder = { Text(question.placeholder) },
                 )
             }

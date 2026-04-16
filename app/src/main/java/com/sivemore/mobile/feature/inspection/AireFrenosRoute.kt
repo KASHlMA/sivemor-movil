@@ -300,7 +300,7 @@ private fun AireFrenosInspectionCard(
                         .fillMaxWidth()
                         .testTag("aire_frenos_numeric_${question.id}"),
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     placeholder = { Text(question.placeholder) },
                 )
             }

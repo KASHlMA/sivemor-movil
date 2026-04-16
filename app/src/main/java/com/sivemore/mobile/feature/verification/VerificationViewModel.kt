@@ -183,7 +183,13 @@ class VerificationViewModel @Inject constructor(
     private fun completeVerification() {
         if (!uiState.value.isEntireVerificationComplete) {
             _uiState.update {
-                it.copy(errorMessage = "Debes completar todas las secciones antes de finalizar la verificacion.")
+                it.copy(
+                    errorMessage = if (it.totalEvidenceCount < 3) {
+                        "Debes agregar al menos 3 evidencias antes de finalizar la verificacion."
+                    } else {
+                        "Debes completar todas las secciones antes de finalizar la verificacion."
+                    }
+                )
             }
             return
         }
