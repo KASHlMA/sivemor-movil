@@ -86,176 +86,172 @@ fun VehicleRegistrationScreen(
             .background(MaterialTheme.colorScheme.background)
             .testTag("vehicle_registration_screen"),
     ) {
-        BrandedHeader(
-            modifier = Modifier.align(Alignment.TopCenter),
-            showAction = true,
-            onActionClick = { onAction(VehicleRegistrationUiAction.OptionsMenuToggled) },
-        )
-
-        DropdownMenu(
-            expanded = state.showOptionsMenu,
-            onDismissRequest = { onAction(VehicleRegistrationUiAction.OptionsMenuDismissed) },
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(top = 86.dp, end = 20.dp)
-                .testTag("vehicle_registration_options_menu"),
-        ) {
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.registration_menu_back)) },
-                onClick = { onAction(VehicleRegistrationUiAction.BackToMenuSelected) },
-            )
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.registration_menu_sign_out)) },
-                onClick = { onAction(VehicleRegistrationUiAction.SignOutSelected) },
-            )
-        }
-
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .imePadding()
-                .padding(start = 32.dp, top = 126.dp, end = 32.dp, bottom = 176.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top,
+            modifier = Modifier.fillMaxSize(),
         ) {
-            Column(
-                modifier = Modifier.widthIn(max = 360.dp),
-                verticalArrangement = Arrangement.spacedBy(spacing.md),
-            ) {
-                Text(
-                    text = stringResource(
-                        if (state.isEditing) {
-                            R.string.registration_edit_title
-                        } else {
-                            R.string.registration_title
-                        },
-                    ),
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.testTag("vehicle_registration_title"),
-                )
-                Text(
-                    text = stringResource(R.string.registration_subtitle),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+            Box {
+                BrandedHeader(
+                    showAction = true,
+                    onActionClick = { onAction(VehicleRegistrationUiAction.OptionsMenuToggled) },
                 )
 
-                VehicleTextField(
-                    value = state.serie.value,
-                    onValueChange = { onAction(VehicleRegistrationUiAction.SerieChanged(it)) },
-                    label = stringResource(R.string.registration_serie),
-                    errorMessage = state.serie.errorMessage,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                    testTag = "serie_input",
-                )
-                VehicleTextField(
-                    value = state.placa.value,
-                    onValueChange = { onAction(VehicleRegistrationUiAction.PlacaChanged(it)) },
-                    label = stringResource(R.string.registration_placa),
-                    errorMessage = state.placa.errorMessage,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                    testTag = "placa_input",
-                )
-                VehicleDropdownField(
-                    label = stringResource(R.string.registration_tipo),
-                    value = state.tipo.value,
-                    displayValue = state.tipo.value,
-                    options = listOf("N2" to "N2", "N3" to "N3"),
-                    expanded = state.showTipoMenu,
-                    errorMessage = state.tipo.errorMessage,
-                    onToggle = { onAction(VehicleRegistrationUiAction.TipoMenuToggled) },
-                    onDismiss = { onAction(VehicleRegistrationUiAction.TipoMenuDismissed) },
-                    onSelected = { onAction(VehicleRegistrationUiAction.TipoSelected(it)) },
-                    testTag = "tipo_input",
-                )
-                VehicleDropdownField(
-                    label = stringResource(R.string.registration_cliente),
-                    value = state.cliente.value,
-                    displayValue = state.clients.firstOrNull { it.id == state.cliente.value }?.name.orEmpty(),
-                    options = state.clients.map { it.id to it.name },
-                    expanded = state.showClienteMenu,
-                    errorMessage = state.cliente.errorMessage,
-                    onToggle = { onAction(VehicleRegistrationUiAction.ClienteMenuToggled) },
-                    onDismiss = { onAction(VehicleRegistrationUiAction.ClienteMenuDismissed) },
-                    onSelected = { onAction(VehicleRegistrationUiAction.ClienteSelected(it)) },
-                    testTag = "cliente_input",
-                )
-                VehicleDropdownField(
-                    label = stringResource(R.string.registration_cedis),
-                    value = state.cedis.value,
-                    displayValue = state.regions.firstOrNull { it.id == state.cedis.value }?.name.orEmpty(),
-                    options = state.regions.map { it.id to it.name },
-                    expanded = state.showCedisMenu,
-                    errorMessage = state.cedis.errorMessage,
-                    onToggle = { onAction(VehicleRegistrationUiAction.CedisMenuToggled) },
-                    onDismiss = { onAction(VehicleRegistrationUiAction.CedisMenuDismissed) },
-                    onSelected = { onAction(VehicleRegistrationUiAction.CedisSelected(it)) },
-                    testTag = "cedis_input",
-                )
-                VehicleDropdownField(
-                    label = stringResource(R.string.registration_order),
-                    value = state.orden.value,
-                    displayValue = state.orders.firstOrNull { it.id == state.orden.value }?.displayName.orEmpty(),
-                    options = state.orders
-                        .filter { it.clientCompanyId == state.cliente.value }
-                        .map { it.id to it.displayName },
-                    expanded = state.showOrdenMenu,
-                    errorMessage = state.orden.errorMessage,
-                    onToggle = { onAction(VehicleRegistrationUiAction.OrdenMenuToggled) },
-                    onDismiss = { onAction(VehicleRegistrationUiAction.OrdenMenuDismissed) },
-                    onSelected = { onAction(VehicleRegistrationUiAction.OrdenSelected(it)) },
-                    testTag = "orden_input",
-                )
-                VehicleTextField(
-                    value = state.marca.value,
-                    onValueChange = { onAction(VehicleRegistrationUiAction.MarcaChanged(it)) },
-                    label = stringResource(R.string.registration_marca),
-                    errorMessage = state.marca.errorMessage,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                    testTag = "marca_input",
-                )
-                VehicleTextField(
-                    value = state.modelo.value,
-                    onValueChange = { onAction(VehicleRegistrationUiAction.ModeloChanged(it)) },
-                    label = stringResource(R.string.registration_modelo),
-                    errorMessage = state.modelo.errorMessage,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    testTag = "modelo_input",
-                )
-
-                state.globalErrorMessage?.let { message ->
-                    Text(
-                        text = message,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.error,
+                DropdownMenu(
+                    expanded = state.showOptionsMenu,
+                    onDismissRequest = { onAction(VehicleRegistrationUiAction.OptionsMenuDismissed) },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = 86.dp, end = 20.dp)
+                        .testTag("vehicle_registration_options_menu"),
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.registration_menu_back)) },
+                        onClick = { onAction(VehicleRegistrationUiAction.BackToMenuSelected) },
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.registration_menu_sign_out)) },
+                        onClick = { onAction(VehicleRegistrationUiAction.SignOutSelected) },
                     )
                 }
+            }
 
-                SivemorePrimaryButton(
-                    text = stringResource(
-                        if (state.isEditing) {
-                            R.string.registration_update
-                        } else {
-                            R.string.registration_save
-                        },
-                    ),
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .imePadding(),
+            ) {
+                Column(
                     modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(start = 32.dp, top = 20.dp, end = 32.dp, bottom = 176.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Top,
+                ) {
+                    Column(
+                        modifier = Modifier.widthIn(max = 360.dp),
+                        verticalArrangement = Arrangement.spacedBy(spacing.md),
+                    ) {
+                        Text(
+                            text = stringResource(
+                                if (state.isEditing) {
+                                    R.string.registration_edit_title
+                                } else {
+                                    R.string.registration_title
+                                },
+                            ),
+                            style = MaterialTheme.typography.headlineLarge,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.testTag("vehicle_registration_title"),
+                        )
+                        Text(
+                            text = stringResource(R.string.registration_subtitle),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+
+                        VehicleTextField(
+                            value = state.serie.value,
+                            onValueChange = { onAction(VehicleRegistrationUiAction.SerieChanged(it)) },
+                            label = stringResource(R.string.registration_serie),
+                            errorMessage = state.serie.errorMessage,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                            testTag = "serie_input",
+                        )
+                        VehicleTextField(
+                            value = state.placa.value,
+                            onValueChange = { onAction(VehicleRegistrationUiAction.PlacaChanged(it)) },
+                            label = stringResource(R.string.registration_placa),
+                            errorMessage = state.placa.errorMessage,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                            testTag = "placa_input",
+                        )
+                        VehicleDropdownField(
+                            label = stringResource(R.string.registration_tipo),
+                            value = state.tipo.value,
+                            displayValue = state.tipo.value,
+                            options = listOf("N2" to "N2", "N3" to "N3"),
+                            expanded = state.showTipoMenu,
+                            errorMessage = state.tipo.errorMessage,
+                            onToggle = { onAction(VehicleRegistrationUiAction.TipoMenuToggled) },
+                            onDismiss = { onAction(VehicleRegistrationUiAction.TipoMenuDismissed) },
+                            onSelected = { onAction(VehicleRegistrationUiAction.TipoSelected(it)) },
+                            testTag = "tipo_input",
+                        )
+                        VehicleDropdownField(
+                            label = stringResource(R.string.registration_cliente),
+                            value = state.cliente.value,
+                            displayValue = state.clients.firstOrNull { it.id == state.cliente.value }?.name.orEmpty(),
+                            options = state.clients.map { it.id to it.name },
+                            expanded = state.showClienteMenu,
+                            errorMessage = state.cliente.errorMessage,
+                            onToggle = { onAction(VehicleRegistrationUiAction.ClienteMenuToggled) },
+                            onDismiss = { onAction(VehicleRegistrationUiAction.ClienteMenuDismissed) },
+                            onSelected = { onAction(VehicleRegistrationUiAction.ClienteSelected(it)) },
+                            testTag = "cliente_input",
+                        )
+                        VehicleDropdownField(
+                            label = stringResource(R.string.registration_cedis),
+                            value = state.cedis.value,
+                            displayValue = state.regions.firstOrNull { it.id == state.cedis.value }?.name.orEmpty(),
+                            options = state.regions.map { it.id to it.name },
+                            expanded = state.showCedisMenu,
+                            errorMessage = state.cedis.errorMessage,
+                            onToggle = { onAction(VehicleRegistrationUiAction.CedisMenuToggled) },
+                            onDismiss = { onAction(VehicleRegistrationUiAction.CedisMenuDismissed) },
+                            onSelected = { onAction(VehicleRegistrationUiAction.CedisSelected(it)) },
+                            testTag = "cedis_input",
+                        )
+                        VehicleTextField(
+                            value = state.marca.value,
+                            onValueChange = { onAction(VehicleRegistrationUiAction.MarcaChanged(it)) },
+                            label = stringResource(R.string.registration_marca),
+                            errorMessage = state.marca.errorMessage,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                            testTag = "marca_input",
+                        )
+                        VehicleTextField(
+                            value = state.modelo.value,
+                            onValueChange = { onAction(VehicleRegistrationUiAction.ModeloChanged(it)) },
+                            label = stringResource(R.string.registration_modelo),
+                            errorMessage = state.modelo.errorMessage,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            testTag = "modelo_input",
+                        )
+
+                        state.globalErrorMessage?.let { message ->
+                            Text(
+                                text = message,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                        }
+
+                        SivemorePrimaryButton(
+                            text = stringResource(
+                                if (state.isEditing) {
+                                    R.string.registration_update
+                                } else {
+                                    R.string.registration_save
+                                },
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(58.dp)
+                                .testTag("save_vehicle_button"),
+                            enabled = state.isFormValid && !state.isSaving,
+                            onClick = { onAction(VehicleRegistrationUiAction.SaveVehicle) },
+                        )
+                    }
+                }
+
+                LoginFooterDecoration(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
                         .fillMaxWidth()
-                        .height(58.dp)
-                        .testTag("save_vehicle_button"),
-                    enabled = state.isFormValid && !state.isSaving,
-                    onClick = { onAction(VehicleRegistrationUiAction.SaveVehicle) },
+                        .height(144.dp),
                 )
             }
         }
-
-        LoginFooterDecoration(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .height(144.dp),
-        )
 
         if (state.showSignOutDialog) {
             ConfirmationDialog(

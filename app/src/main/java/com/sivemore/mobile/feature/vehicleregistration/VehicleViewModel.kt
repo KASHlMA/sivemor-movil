@@ -338,7 +338,7 @@ private fun VehicleRegistrationUiState.validated(): VehicleRegistrationUiState =
     tipo = tipo.copy(errorMessage = validateRequired(tipo.value)),
     cliente = cliente.copy(errorMessage = validateRequired(cliente.value)),
     cedis = cedis.copy(errorMessage = validateRequired(cedis.value)),
-    orden = orden.copy(errorMessage = validateRequired(orden.value)),
+    orden = orden.copy(errorMessage = null),
     marca = marca.copy(errorMessage = validateRequired(marca.value)),
     modelo = modelo.copy(errorMessage = validateRequired(modelo.value)),
 )
@@ -349,7 +349,6 @@ private fun VehicleRegistrationUiState.hasErrors(): Boolean = listOf(
     tipo.errorMessage,
     cliente.errorMessage,
     cedis.errorMessage,
-    orden.errorMessage,
     marca.errorMessage,
     modelo.errorMessage,
 ).any { it != null }

@@ -41,7 +41,6 @@ data class VehicleRegistrationUiState(
             tipo.value.isNotBlank() &&
             cliente.value.isNotBlank() &&
             cedis.value.isNotBlank() &&
-            orden.value.isNotBlank() &&
             marca.value.isNotBlank() &&
             modelo.value.isNotBlank()
 }

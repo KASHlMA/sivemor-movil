@@ -51,8 +51,10 @@ class RealVehicleRepository @Inject constructor(
             CreateVehicleRequestDto(
                 clientCompanyId = vehicle.numeroEconomico.trim().toLongOrNull()
                     ?: error("El numero de cliente debe ser numerico."),
-                verificationOrderId = vehicle.verificationOrderId?.trim()?.toLongOrNull()
-                    ?: error("Selecciona una orden valida."),
+                verificationOrderId = vehicle.verificationOrderId
+                    ?.trim()
+                    ?.takeIf { it.isNotBlank() }
+                    ?.toLongOrNull(),
                 plate = vehicle.placas,
                 vin = vehicle.vin,
                 category = vehicle.tipoVehiculo.ifBlank { "N2" },
