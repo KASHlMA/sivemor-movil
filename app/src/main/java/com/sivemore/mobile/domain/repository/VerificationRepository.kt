@@ -1,6 +1,7 @@
 package com.sivemore.mobile.domain.repository
 
 import com.sivemore.mobile.domain.model.EvidenceUpload
+import com.sivemore.mobile.domain.model.InspectionFlowAnswerDraft
 import com.sivemore.mobile.domain.model.VerificationSession
 
 interface VerificationRepository {
@@ -28,6 +29,12 @@ interface VerificationRepository {
     suspend fun updateComments(
         orderUnitId: String,
         value: String,
+    ): VerificationSession
+
+    suspend fun syncInspectionFlowDraft(
+        orderUnitId: String,
+        overallComment: String,
+        answers: List<InspectionFlowAnswerDraft>,
     ): VerificationSession
 
     suspend fun addEvidence(

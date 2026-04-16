@@ -4,11 +4,13 @@ import com.sivemore.mobile.data.network.InspectionDraftDto
 import com.sivemore.mobile.data.network.InspectionDraftResolver
 import com.sivemore.mobile.data.network.MediaUploadResolver
 import com.sivemore.mobile.data.network.MobileApiService
+import com.sivemore.mobile.data.network.ChecklistQuestionDto
 import com.sivemore.mobile.data.network.QuestionUpdateDto
 import com.sivemore.mobile.data.network.SectionUpdateDto
 import com.sivemore.mobile.data.network.UpdateInspectionRequestDto
 import com.sivemore.mobile.data.network.toDomain
 import com.sivemore.mobile.domain.model.EvidenceUpload
+import com.sivemore.mobile.domain.model.InspectionFlowAnswerDraft
 import com.sivemore.mobile.domain.model.VerificationSession
 import com.sivemore.mobile.domain.repository.VerificationRepository
 import javax.inject.Inject
@@ -100,6 +102,36 @@ class RealVerificationRepository @Inject constructor(
             inspectionId = inspectionId,
             request = UpdateInspectionRequestDto(overallComment = value.ifBlank { null }),
         ).toDomain()
+    }
+
+    override suspend fun syncInspectionFlowDraft(
+        orderUnitId: String,
+        overallComment: String,
+        answers: List<InspectionFlowAnswerDraft>,
+    ): VerificationSession {
+        val inspectionId = draftResolver.resolveInspectionId(orderUnitId)
+        val draft = mobileApiService.getInspection(inspectionId)
+        val answersByCode = answers.associateBy { it.questionCode }
+        val updated = mobileApiService.updateInspection(
+            inspectionId = inspectionId,
+            request = UpdateInspectionRequestDto(
+                lastSectionIndex = draft.lastSectionIndex,
+                overallComment = overallComment.ifBlank { null },
+                sections = draft.sections.sortedBy { it.displayOrder }.map { section ->
+                    SectionUpdateDto(
+                        sectionId = section.sectionId,
+                        note = section.note,
+                        questions = section.questions.sortedBy { it.displayOrder }.map { question ->
+                            question.toDraftUpdate(
+                                existing = section.answers.firstOrNull { it.questionId == question.id },
+                                override = answersByCode[question.code],
+                            )
+                        },
+                    )
+                },
+            ),
+        )
+        return updated.toDomain()
     }
 
     override suspend fun addEvidence(
@@ -208,6 +240,29 @@ class RealVerificationRepository @Inject constructor(
                     comment = null,
                 )
             },
+        )
+    }
+
+    private fun ChecklistQuestionDto.toDraftUpdate(
+        existing: com.sivemore.mobile.data.network.InspectionQuestionAnswerDto?,
+        override: InspectionFlowAnswerDraft?,
+    ): QuestionUpdateDto = when {
+        override != null -> QuestionUpdateDto(
+            questionId = id,
+            answer = override.answer,
+            comment = override.comment.ifBlank { null },
+        )
+
+        existing != null -> QuestionUpdateDto(
+            questionId = existing.questionId,
+            answer = existing.answer,
+            comment = existing.comment,
+        )
+
+        else -> QuestionUpdateDto(
+            questionId = id,
+            answer = "NA",
+            comment = null,
         )
     }
 }

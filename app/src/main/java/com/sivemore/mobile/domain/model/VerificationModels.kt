@@ -50,6 +50,12 @@ data class VerificationSession(
     val evidenceCount: Int,
 )
 
+data class InspectionFlowAnswerDraft(
+    val questionCode: String,
+    val answer: String,
+    val comment: String = "",
+)
+
 data class InspectionSection(
     val id: String,
     val title: String,

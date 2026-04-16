@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sivemore.mobile.domain.model.EvidenceUpload
+import com.sivemore.mobile.domain.model.InspectionFlowAnswerDraft
 import com.sivemore.mobile.domain.model.InspectionSection
 import com.sivemore.mobile.domain.model.VerificationSession
 import com.sivemore.mobile.domain.repository.AuthRepository
@@ -323,7 +324,12 @@ class InspectionFlowViewModel @Inject constructor(
         }
         viewModelScope.launch {
             runCatching {
-                persistCommentIfNeeded()
+                val state = uiState.value
+                verificationRepository.syncInspectionFlowDraft(
+                    orderUnitId = vehicleId,
+                    overallComment = state.commentDraft,
+                    answers = state.toInspectionFlowAnswers(),
+                )
                 verificationRepository.completeSession(vehicleId)
             }.onSuccess {
                 _uiState.update { it.copy(isSavingComment = false) }
@@ -402,6 +408,42 @@ private fun applyPreviewUriToNewEvidence(
             item
         }
     }
+}
+
+private fun InspectionFlowUiState.toInspectionFlowAnswers(): List<InspectionFlowAnswerDraft> = buildList {
+    addAll(lucesSection.toAnswerDrafts())
+    addAll(llantasSection.toAnswerDrafts())
+    addAll(direccionSection.toAnswerDrafts())
+    addAll(aireFrenosSection.toAnswerDrafts())
+    addAll(motorEmisionesSection.toAnswerDrafts())
+    addAll(otrosSection.toAnswerDrafts())
+}
+
+private fun InspectionSectionUiState.toAnswerDrafts(): List<InspectionFlowAnswerDraft> = allQuestions.mapNotNull { question ->
+    when (question.kind) {
+        InspectionQuestionKind.SingleChoice -> question.selectedOptionId?.let { selected ->
+            InspectionFlowAnswerDraft(
+                questionCode = question.id,
+                answer = selected.toBackendAnswer(),
+                comment = "",
+            )
+        }
+
+        InspectionQuestionKind.NumericInput -> question.numericValue
+            .takeIf { it.isNotBlank() }
+            ?.let { value ->
+                InspectionFlowAnswerDraft(
+                    questionCode = question.id,
+                    answer = "PASS",
+                    comment = value,
+                )
+            }
+    }
+}
+
+private fun String.toBackendAnswer(): String = when (this) {
+    "APPROVED" -> "PASS"
+    else -> "FAIL"
 }
 
 data class InspectionFlowUiState(
