@@ -8,6 +8,9 @@ import com.sivemore.mobile.domain.model.InspectionSection
 import com.sivemore.mobile.domain.model.VerificationSession
 import com.sivemore.mobile.domain.model.VerificationSessionStatus
 import com.sivemore.mobile.domain.model.Vehicle
+import com.sivemore.mobile.domain.model.VehicleClient
+import com.sivemore.mobile.domain.model.VehicleOrder
+import com.sivemore.mobile.domain.model.VehicleRegion
 import com.sivemore.mobile.domain.model.VehicleStatus
 import com.sivemore.mobile.domain.model.VehicleSummary
 import java.time.Instant
@@ -44,6 +47,36 @@ fun AssignedOrderDto.toEditableVehicle(): Vehicle = Vehicle(
     modelo = "",
     tipoVehiculo = vehicleCategory,
     vin = orderNumber,
+    verificationOrderId = orderId.toString(),
+)
+
+fun AssignedOrderDto.toVehicleOrder(): VehicleOrder = VehicleOrder(
+    id = orderId.toString(),
+    orderNumber = orderNumber,
+    clientCompanyId = clientCompanyId.toString(),
+    clientCompanyName = clientCompanyName,
+    vehiclePlate = vehiclePlate,
+)
+
+fun VehicleClientDto.toDomain(): VehicleClient = VehicleClient(
+    id = id.toString(),
+    name = name,
+    regionId = regionId?.toString(),
+)
+
+fun VehicleRegionDto.toDomain(): VehicleRegion = VehicleRegion(
+    id = id.toString(),
+    name = name,
+)
+
+fun VehicleDto.toDomain(): Vehicle = Vehicle(
+    id = id.toString(),
+    numeroEconomico = clientCompanyId.toString(),
+    placas = plate,
+    marca = brand,
+    modelo = model,
+    tipoVehiculo = category,
+    vin = vin,
 )
 
 fun InspectionDraftDto.toDomain(): VerificationSession = VerificationSession(

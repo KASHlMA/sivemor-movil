@@ -97,7 +97,7 @@ fun DireccionRoute(
         onBack = onNavigateBack,
         onTakePhoto = {
             if (state.canAddMorePhotos) {
-                val captureUri = createCaptureUri(context)
+                val captureUri = createPersistentCaptureUri(context)
                 pendingCaptureUri = captureUri
                 cameraLauncher.launch(captureUri)
             } else {
@@ -310,15 +310,6 @@ private fun DireccionInspectionCard(
     }
 }
 
-private fun createCaptureUri(context: Context): Uri {
-    val imageDir = File(context.cacheDir, "images").apply { mkdirs() }
-    val imageFile = File.createTempFile("capture_", ".jpg", imageDir)
-    return FileProvider.getUriForFile(
-        context,
-        "${context.packageName}.fileprovider",
-        imageFile,
-    )
-}
 
 @PhonePreview
 @Composable

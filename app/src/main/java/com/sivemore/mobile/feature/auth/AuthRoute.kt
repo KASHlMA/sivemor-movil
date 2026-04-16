@@ -15,7 +15,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -149,17 +148,6 @@ fun AuthScreen(
                 enabled = state.isSubmitEnabled,
             ) {
                 Text(stringResource(R.string.auth_primary_cta))
-            }
-            if (com.sivemore.mobile.BuildConfig.DEBUG) {
-                OutlinedButton(
-                    onClick = { onAction(AuthUiAction.ProbeBackend) },
-                    modifier = Modifier
-                        .width(220.dp)
-                        .testTag("auth_probe_backend"),
-                    enabled = !state.isLoading,
-                ) {
-                    Text(stringResource(R.string.auth_probe_backend))
-                }
             }
         }
 

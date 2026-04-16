@@ -1,8 +1,10 @@
 package com.sivemore.mobile.data.repository
 
 import com.sivemore.mobile.data.network.MobileApiService
+import com.sivemore.mobile.data.network.CreateVehicleRequestDto
 import com.sivemore.mobile.data.network.toEditableVehicle
 import com.sivemore.mobile.data.network.toDomain
+import com.sivemore.mobile.data.network.toVehicleOrder
 import com.sivemore.mobile.domain.model.Vehicle
 import com.sivemore.mobile.domain.model.VehicleSummary
 import com.sivemore.mobile.domain.repository.VehicleRepository
@@ -14,6 +16,12 @@ class RealVehicleRepository @Inject constructor(
     private val mobileApiService: MobileApiService,
     private val registrationStore: VehicleRegistrationStore,
 ) : VehicleRepository {
+    override suspend fun loadClients() = mobileApiService.listClients().map { it.toDomain() }
+
+    override suspend fun loadRegions() = mobileApiService.listRegions().map { it.toDomain() }
+
+    override suspend fun loadOrders() = mobileApiService.listOrders().map { it.toVehicleOrder() }
+
     override suspend fun loadVehicles(query: String): List<VehicleSummary> {
         val normalizedQuery = query.trim()
         val remoteVehicles = mobileApiService.listOrders().map { it.toDomain() }
@@ -39,5 +47,17 @@ class RealVehicleRepository @Inject constructor(
                 ?.toEditableVehicle()
 
     override suspend fun saveVehicle(vehicle: Vehicle): Vehicle =
-        registrationStore.saveVehicle(vehicle)
+        mobileApiService.createVehicle(
+            CreateVehicleRequestDto(
+                clientCompanyId = vehicle.numeroEconomico.trim().toLongOrNull()
+                    ?: error("El numero de cliente debe ser numerico."),
+                verificationOrderId = vehicle.verificationOrderId?.trim()?.toLongOrNull()
+                    ?: error("Selecciona una orden valida."),
+                plate = vehicle.placas,
+                vin = vehicle.vin,
+                category = vehicle.tipoVehiculo.ifBlank { "N2" },
+                brand = vehicle.marca.ifBlank { "Sin marca" },
+                model = vehicle.modelo.ifBlank { "Sin modelo" },
+            ),
+        ).toDomain()
 }

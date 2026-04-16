@@ -1,5 +1,9 @@
 package com.sivemore.mobile.feature.vehicleregistration
 
+import com.sivemore.mobile.domain.model.VehicleClient
+import com.sivemore.mobile.domain.model.VehicleOrder
+import com.sivemore.mobile.domain.model.VehicleRegion
+
 data class VehicleFormFieldState(
     val value: String = "",
     val errorMessage: String? = null,
@@ -9,8 +13,19 @@ data class VehicleRegistrationUiState(
     val vehicleId: String? = null,
     val placa: VehicleFormFieldState = VehicleFormFieldState(),
     val serie: VehicleFormFieldState = VehicleFormFieldState(),
+    val tipo: VehicleFormFieldState = VehicleFormFieldState(),
+    val cliente: VehicleFormFieldState = VehicleFormFieldState(),
     val cedis: VehicleFormFieldState = VehicleFormFieldState(),
-    val numeroCliente: VehicleFormFieldState = VehicleFormFieldState(),
+    val orden: VehicleFormFieldState = VehicleFormFieldState(),
+    val marca: VehicleFormFieldState = VehicleFormFieldState(),
+    val modelo: VehicleFormFieldState = VehicleFormFieldState(),
+    val clients: List<VehicleClient> = emptyList(),
+    val regions: List<VehicleRegion> = emptyList(),
+    val orders: List<VehicleOrder> = emptyList(),
+    val showTipoMenu: Boolean = false,
+    val showClienteMenu: Boolean = false,
+    val showCedisMenu: Boolean = false,
+    val showOrdenMenu: Boolean = false,
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     val showOptionsMenu: Boolean = false,
@@ -23,15 +38,31 @@ data class VehicleRegistrationUiState(
     val isFormValid: Boolean
         get() = placa.value.isNotBlank() &&
             serie.value.isNotBlank() &&
+            tipo.value.isNotBlank() &&
+            cliente.value.isNotBlank() &&
             cedis.value.isNotBlank() &&
-            numeroCliente.value.isNotBlank()
+            orden.value.isNotBlank() &&
+            marca.value.isNotBlank() &&
+            modelo.value.isNotBlank()
 }
 
 sealed interface VehicleRegistrationUiAction {
     data class PlacaChanged(val value: String) : VehicleRegistrationUiAction
     data class SerieChanged(val value: String) : VehicleRegistrationUiAction
-    data class CedisChanged(val value: String) : VehicleRegistrationUiAction
-    data class NumeroClienteChanged(val value: String) : VehicleRegistrationUiAction
+    data class TipoSelected(val value: String) : VehicleRegistrationUiAction
+    data class ClienteSelected(val value: String) : VehicleRegistrationUiAction
+    data class CedisSelected(val value: String) : VehicleRegistrationUiAction
+    data class OrdenSelected(val value: String) : VehicleRegistrationUiAction
+    data class MarcaChanged(val value: String) : VehicleRegistrationUiAction
+    data class ModeloChanged(val value: String) : VehicleRegistrationUiAction
+    data object TipoMenuToggled : VehicleRegistrationUiAction
+    data object TipoMenuDismissed : VehicleRegistrationUiAction
+    data object ClienteMenuToggled : VehicleRegistrationUiAction
+    data object ClienteMenuDismissed : VehicleRegistrationUiAction
+    data object CedisMenuToggled : VehicleRegistrationUiAction
+    data object CedisMenuDismissed : VehicleRegistrationUiAction
+    data object OrdenMenuToggled : VehicleRegistrationUiAction
+    data object OrdenMenuDismissed : VehicleRegistrationUiAction
     data object OptionsMenuToggled : VehicleRegistrationUiAction
     data object OptionsMenuDismissed : VehicleRegistrationUiAction
     data object BackToMenuSelected : VehicleRegistrationUiAction

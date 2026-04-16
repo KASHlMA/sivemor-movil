@@ -36,6 +36,7 @@ class VehicleViewModel @Inject constructor(
     val events: SharedFlow<VehicleRegistrationEvent> = _events.asSharedFlow()
 
     init {
+        loadCatalogs()
         if (!vehicleId.isNullOrBlank()) {
             loadVehicleForEdit(vehicleId)
         }
@@ -45,8 +46,36 @@ class VehicleViewModel @Inject constructor(
         when (action) {
             is VehicleRegistrationUiAction.PlacaChanged -> updatePlaca(action.value)
             is VehicleRegistrationUiAction.SerieChanged -> updateSerie(action.value)
-            is VehicleRegistrationUiAction.CedisChanged -> updateCedis(action.value)
-            is VehicleRegistrationUiAction.NumeroClienteChanged -> updateNumeroCliente(action.value)
+            is VehicleRegistrationUiAction.TipoSelected -> updateTipo(action.value)
+            is VehicleRegistrationUiAction.ClienteSelected -> updateCliente(action.value)
+            is VehicleRegistrationUiAction.CedisSelected -> updateCedis(action.value)
+            is VehicleRegistrationUiAction.OrdenSelected -> updateOrden(action.value)
+            is VehicleRegistrationUiAction.MarcaChanged -> updateMarca(action.value)
+            is VehicleRegistrationUiAction.ModeloChanged -> updateModelo(action.value)
+            VehicleRegistrationUiAction.TipoMenuToggled -> _uiState.update {
+                it.copy(showTipoMenu = !it.showTipoMenu, globalErrorMessage = null)
+            }
+            VehicleRegistrationUiAction.TipoMenuDismissed -> _uiState.update {
+                it.copy(showTipoMenu = false)
+            }
+            VehicleRegistrationUiAction.ClienteMenuToggled -> _uiState.update {
+                it.copy(showClienteMenu = !it.showClienteMenu, globalErrorMessage = null)
+            }
+            VehicleRegistrationUiAction.ClienteMenuDismissed -> _uiState.update {
+                it.copy(showClienteMenu = false)
+            }
+            VehicleRegistrationUiAction.CedisMenuToggled -> _uiState.update {
+                it.copy(showCedisMenu = !it.showCedisMenu, globalErrorMessage = null)
+            }
+            VehicleRegistrationUiAction.CedisMenuDismissed -> _uiState.update {
+                it.copy(showCedisMenu = false)
+            }
+            VehicleRegistrationUiAction.OrdenMenuToggled -> _uiState.update {
+                it.copy(showOrdenMenu = !it.showOrdenMenu, globalErrorMessage = null)
+            }
+            VehicleRegistrationUiAction.OrdenMenuDismissed -> _uiState.update {
+                it.copy(showOrdenMenu = false)
+            }
             VehicleRegistrationUiAction.OptionsMenuToggled -> _uiState.update {
                 it.copy(showOptionsMenu = !it.showOptionsMenu, globalErrorMessage = null)
             }
@@ -62,6 +91,36 @@ class VehicleViewModel @Inject constructor(
             }
             VehicleRegistrationUiAction.SignOutConfirmed -> signOut()
             VehicleRegistrationUiAction.SaveVehicle -> saveVehicle()
+        }
+    }
+
+    private fun loadCatalogs() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, globalErrorMessage = null) }
+            runCatching {
+                Triple(
+                    vehicleRepository.loadClients(),
+                    vehicleRepository.loadRegions(),
+                    vehicleRepository.loadOrders(),
+                )
+            }.onSuccess { (clients, regions, orders) ->
+                _uiState.update {
+                    it.copy(
+                        clients = clients,
+                        regions = regions,
+                        orders = orders,
+                        isLoading = false,
+                        globalErrorMessage = null,
+                    )
+                }
+            }.onFailure { failure ->
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        globalErrorMessage = failure.message ?: "No fue posible cargar los catalogos.",
+                    )
+                }
+            }
         }
     }
 
@@ -89,10 +148,73 @@ class VehicleViewModel @Inject constructor(
         }
     }
 
+    private fun updateTipo(value: String) {
+        _uiState.update {
+            it.copy(
+                tipo = VehicleFormFieldState(
+                    value = value,
+                    errorMessage = validateRequired(value),
+                ),
+                showTipoMenu = false,
+                globalErrorMessage = null,
+            )
+        }
+    }
+
+    private fun updateCliente(value: String) {
+        _uiState.update {
+            val selectedClient = it.clients.firstOrNull { client -> client.id == value }
+            it.copy(
+                cliente = VehicleFormFieldState(
+                    value = value,
+                    errorMessage = validateRequired(value),
+                ),
+                cedis = if (!selectedClient?.regionId.isNullOrBlank()) {
+                    VehicleFormFieldState(value = selectedClient?.regionId.orEmpty())
+                } else {
+                    it.cedis
+                },
+                orden = VehicleFormFieldState(),
+                showClienteMenu = false,
+                globalErrorMessage = null,
+            )
+        }
+    }
+
     private fun updateCedis(value: String) {
         _uiState.update {
             it.copy(
                 cedis = VehicleFormFieldState(
+                    value = value,
+                    errorMessage = validateRequired(value),
+                ),
+                showCedisMenu = false,
+                globalErrorMessage = null,
+            )
+        }
+    }
+
+    private fun updateOrden(value: String) {
+        _uiState.update {
+            val selectedOrder = it.orders.firstOrNull { order -> order.id == value }
+            it.copy(
+                orden = VehicleFormFieldState(
+                    value = value,
+                    errorMessage = validateRequired(value),
+                ),
+                cliente = selectedOrder?.let { order ->
+                    VehicleFormFieldState(value = order.clientCompanyId, errorMessage = null)
+                } ?: it.cliente,
+                showOrdenMenu = false,
+                globalErrorMessage = null,
+            )
+        }
+    }
+
+    private fun updateMarca(value: String) {
+        _uiState.update {
+            it.copy(
+                marca = VehicleFormFieldState(
                     value = value,
                     errorMessage = validateRequired(value),
                 ),
@@ -101,10 +223,10 @@ class VehicleViewModel @Inject constructor(
         }
     }
 
-    private fun updateNumeroCliente(value: String) {
+    private fun updateModelo(value: String) {
         _uiState.update {
             it.copy(
-                numeroCliente = VehicleFormFieldState(
+                modelo = VehicleFormFieldState(
                     value = value,
                     errorMessage = validateRequired(value),
                 ),
@@ -126,12 +248,13 @@ class VehicleViewModel @Inject constructor(
                 vehicleRepository.saveVehicle(
                     Vehicle(
                         id = validatedState.vehicleId ?: "local-${System.currentTimeMillis()}",
-                        numeroEconomico = validatedState.numeroCliente.value,
+                        numeroEconomico = validatedState.cliente.value,
                         placas = validatedState.placa.value,
-                        marca = validatedState.cedis.value,
-                        modelo = "",
-                        tipoVehiculo = "",
+                        marca = validatedState.marca.value,
+                        modelo = validatedState.modelo.value,
+                        tipoVehiculo = validatedState.tipo.value,
                         vin = validatedState.serie.value,
+                        verificationOrderId = validatedState.orden.value,
                     ),
                 )
             }.onSuccess { vehicle ->
@@ -168,8 +291,16 @@ class VehicleViewModel @Inject constructor(
                         vehicleId = vehicle.id,
                         placa = VehicleFormFieldState(value = vehicle.placas),
                         serie = VehicleFormFieldState(value = vehicle.vin),
-                        cedis = VehicleFormFieldState(value = vehicle.marca),
-                        numeroCliente = VehicleFormFieldState(value = vehicle.numeroEconomico),
+                        tipo = VehicleFormFieldState(value = vehicle.tipoVehiculo),
+                        cliente = VehicleFormFieldState(value = vehicle.numeroEconomico),
+                        orden = VehicleFormFieldState(value = vehicle.verificationOrderId.orEmpty()),
+                        cedis = VehicleFormFieldState(
+                            value = it.clients.firstOrNull { client -> client.id == vehicle.numeroEconomico }
+                                ?.regionId
+                                .orEmpty(),
+                        ),
+                        marca = VehicleFormFieldState(value = vehicle.marca),
+                        modelo = VehicleFormFieldState(value = vehicle.modelo),
                         isLoading = false,
                         globalErrorMessage = null,
                     )
@@ -204,15 +335,23 @@ class VehicleViewModel @Inject constructor(
 private fun VehicleRegistrationUiState.validated(): VehicleRegistrationUiState = copy(
     placa = placa.copy(errorMessage = validateRequired(placa.value)),
     serie = serie.copy(errorMessage = validateRequired(serie.value)),
+    tipo = tipo.copy(errorMessage = validateRequired(tipo.value)),
+    cliente = cliente.copy(errorMessage = validateRequired(cliente.value)),
     cedis = cedis.copy(errorMessage = validateRequired(cedis.value)),
-    numeroCliente = numeroCliente.copy(errorMessage = validateRequired(numeroCliente.value)),
+    orden = orden.copy(errorMessage = validateRequired(orden.value)),
+    marca = marca.copy(errorMessage = validateRequired(marca.value)),
+    modelo = modelo.copy(errorMessage = validateRequired(modelo.value)),
 )
 
 private fun VehicleRegistrationUiState.hasErrors(): Boolean = listOf(
     placa.errorMessage,
     serie.errorMessage,
+    tipo.errorMessage,
+    cliente.errorMessage,
     cedis.errorMessage,
-    numeroCliente.errorMessage,
+    orden.errorMessage,
+    marca.errorMessage,
+    modelo.errorMessage,
 ).any { it != null }
 
 private fun validateRequired(value: String): String? =

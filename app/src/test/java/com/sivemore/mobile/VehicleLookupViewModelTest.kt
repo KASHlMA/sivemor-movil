@@ -1,6 +1,8 @@
 package com.sivemore.mobile
 
 import com.sivemore.mobile.domain.model.Vehicle
+import com.sivemore.mobile.domain.model.VehicleClient
+import com.sivemore.mobile.domain.model.VehicleRegion
 import com.sivemore.mobile.domain.model.VehicleSummary
 import com.sivemore.mobile.domain.repository.VehicleRepository
 import com.sivemore.mobile.feature.vehiclelookup.VehicleLookupEvent
@@ -115,6 +117,10 @@ class VehicleLookupViewModelTest {
         private val failRefresh: Boolean = false,
     ) : VehicleRepository {
         private var loadCalls = 0
+
+        override suspend fun loadClients(): List<VehicleClient> = emptyList()
+
+        override suspend fun loadRegions(): List<VehicleRegion> = emptyList()
 
         override suspend fun loadVehicles(query: String): List<VehicleSummary> {
             loadCalls += 1

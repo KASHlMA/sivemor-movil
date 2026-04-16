@@ -10,7 +10,6 @@
     <string name="auth_password_label">Contrasena</string>
     <string name="auth_primary_cta">Iniciar sesion</string>
     <string name="auth_helper">Usa tu usuario tecnico asignado para conectarte al backend.</string>
-    <string name="auth_probe_backend">Probar backend local</string>
 
     <string name="search_label">Buscar</string>
     <string name="search_placeholder">Numero de vehiculo, placas o numero de serie</string>
@@ -18,7 +17,6 @@
     <string name="vehicle_menu_title">Menu</string>
     <string name="vehicle_menu_visualization">Visualizacion de vehiculos</string>
     <string name="vehicle_menu_registration">Registrar vehiculo</string>
-    <string name="vehicle_menu_registration_helper">El registro manual esta deshabilitado porque todavia no sincroniza con el backend ni aparece en web-admin.</string>
 
     <string name="vehicle_search_title">Visualizacion de vehiculos</string>
     <string name="vehicle_search_description">Consulta los vehiculos asignados al tecnico y abre la verificacion correspondiente.</string>
@@ -94,9 +92,14 @@
     <string name="registration_edit_title">Editar vehiculo</string>
     <string name="registration_subtitle">Captura la informacion obligatoria de la unidad antes de iniciar la evaluacion.</string>
     <string name="registration_placa">Placa</string>
-    <string name="registration_serie">Serie</string>
-    <string name="registration_cedis">Cedis</string>
-    <string name="registration_numero_cliente">Numero de cliente</string>
+    <string name="registration_serie">Numero de serie</string>
+    <string name="registration_tipo">Tipo</string>
+    <string name="registration_cliente">Cliente</string>
+    <string name="registration_cedis">CEDIS</string>
+    <string name="registration_order">Orden</string>
+    <string name="registration_marca">Marca</string>
+    <string name="registration_modelo">Modelo</string>
+    <string name="registration_select_placeholder">Selecciona una opcion</string>
     <string name="registration_save">Guardar vehiculo</string>
     <string name="registration_update">Actualizar vehiculo</string>
     <string name="registration_menu_back">Volver al menu principal</string>

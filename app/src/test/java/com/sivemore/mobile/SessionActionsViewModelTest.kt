@@ -4,7 +4,10 @@ import androidx.lifecycle.SavedStateHandle
 import com.sivemore.mobile.domain.model.AuthCredentials
 import com.sivemore.mobile.domain.model.AuthenticatedUser
 import com.sivemore.mobile.domain.model.EvidenceUpload
+import com.sivemore.mobile.domain.model.InspectionFlowAnswerDraft
 import com.sivemore.mobile.domain.model.Vehicle
+import com.sivemore.mobile.domain.model.VehicleClient
+import com.sivemore.mobile.domain.model.VehicleRegion
 import com.sivemore.mobile.domain.model.VerificationSession
 import com.sivemore.mobile.domain.model.VehicleSummary
 import com.sivemore.mobile.domain.repository.AuthRepository
@@ -54,8 +57,11 @@ class SessionActionsViewModelTest {
     private fun buildViewModel(): SessionActionsViewModel = SessionActionsViewModel(
         savedStateHandle = SavedStateHandle(mapOf("vehicleId" to "1")),
         vehicleRepository = object : VehicleRepository {
+            override suspend fun loadClients(): List<VehicleClient> = emptyList()
+            override suspend fun loadRegions(): List<VehicleRegion> = emptyList()
             override suspend fun loadVehicles(query: String): List<VehicleSummary> = listOf(sampleVehicle())
             override suspend fun loadVehicle(vehicleId: String): VehicleSummary? = sampleVehicle(id = vehicleId)
+            override suspend fun loadVehicleForEdit(vehicleId: String): Vehicle? = null
             override suspend fun saveVehicle(vehicle: Vehicle): Vehicle = vehicle
         },
         verificationRepository = object : VerificationRepository {
@@ -64,6 +70,7 @@ class SessionActionsViewModelTest {
             override suspend fun updateQuestionComment(orderUnitId: String, sectionId: String, questionId: String, value: String): VerificationSession = sampleSession(orderUnitId)
             override suspend fun updateSectionNote(orderUnitId: String, sectionId: String, value: String): VerificationSession = sampleSession(orderUnitId)
             override suspend fun updateComments(orderUnitId: String, value: String): VerificationSession = sampleSession(orderUnitId)
+            override suspend fun syncInspectionFlowDraft(orderUnitId: String, overallComment: String, answers: List<InspectionFlowAnswerDraft>): VerificationSession = sampleSession(orderUnitId)
             override suspend fun addEvidence(orderUnitId: String, sectionId: String, upload: EvidenceUpload): VerificationSession = sampleSession(orderUnitId)
             override suspend fun removeEvidence(orderUnitId: String, evidenceId: String): VerificationSession = sampleSession(orderUnitId)
             override suspend fun pauseSession(orderUnitId: String) = Unit

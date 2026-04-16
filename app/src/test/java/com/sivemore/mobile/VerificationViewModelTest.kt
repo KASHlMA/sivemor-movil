@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import com.sivemore.mobile.domain.model.AuthCredentials
 import com.sivemore.mobile.domain.model.AuthenticatedUser
 import com.sivemore.mobile.domain.model.EvidenceUpload
+import com.sivemore.mobile.domain.model.InspectionFlowAnswerDraft
 import com.sivemore.mobile.domain.model.VerificationSession
 import com.sivemore.mobile.domain.repository.AuthRepository
 import com.sivemore.mobile.domain.repository.VerificationRepository
@@ -175,6 +176,8 @@ class VerificationViewModelTest {
             sessionState = sessionState.copy(comments = value)
             return sessionState
         }
+
+        override suspend fun syncInspectionFlowDraft(orderUnitId: String, overallComment: String, answers: List<InspectionFlowAnswerDraft>): VerificationSession = sessionState
 
         override suspend fun addEvidence(orderUnitId: String, sectionId: String, upload: EvidenceUpload): VerificationSession = sessionState
 

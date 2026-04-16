@@ -17,6 +17,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -141,14 +142,6 @@ fun VehicleRegistrationScreen(
                 )
 
                 VehicleTextField(
-                    value = state.placa.value,
-                    onValueChange = { onAction(VehicleRegistrationUiAction.PlacaChanged(it)) },
-                    label = stringResource(R.string.registration_placa),
-                    errorMessage = state.placa.errorMessage,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                    testTag = "placa_input",
-                )
-                VehicleTextField(
                     value = state.serie.value,
                     onValueChange = { onAction(VehicleRegistrationUiAction.SerieChanged(it)) },
                     label = stringResource(R.string.registration_serie),
@@ -157,20 +150,78 @@ fun VehicleRegistrationScreen(
                     testTag = "serie_input",
                 )
                 VehicleTextField(
-                    value = state.cedis.value,
-                    onValueChange = { onAction(VehicleRegistrationUiAction.CedisChanged(it)) },
-                    label = stringResource(R.string.registration_cedis),
-                    errorMessage = state.cedis.errorMessage,
+                    value = state.placa.value,
+                    onValueChange = { onAction(VehicleRegistrationUiAction.PlacaChanged(it)) },
+                    label = stringResource(R.string.registration_placa),
+                    errorMessage = state.placa.errorMessage,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    testTag = "placa_input",
+                )
+                VehicleDropdownField(
+                    label = stringResource(R.string.registration_tipo),
+                    value = state.tipo.value,
+                    displayValue = state.tipo.value,
+                    options = listOf("N2" to "N2", "N3" to "N3"),
+                    expanded = state.showTipoMenu,
+                    errorMessage = state.tipo.errorMessage,
+                    onToggle = { onAction(VehicleRegistrationUiAction.TipoMenuToggled) },
+                    onDismiss = { onAction(VehicleRegistrationUiAction.TipoMenuDismissed) },
+                    onSelected = { onAction(VehicleRegistrationUiAction.TipoSelected(it)) },
+                    testTag = "tipo_input",
+                )
+                VehicleDropdownField(
+                    label = stringResource(R.string.registration_cliente),
+                    value = state.cliente.value,
+                    displayValue = state.clients.firstOrNull { it.id == state.cliente.value }?.name.orEmpty(),
+                    options = state.clients.map { it.id to it.name },
+                    expanded = state.showClienteMenu,
+                    errorMessage = state.cliente.errorMessage,
+                    onToggle = { onAction(VehicleRegistrationUiAction.ClienteMenuToggled) },
+                    onDismiss = { onAction(VehicleRegistrationUiAction.ClienteMenuDismissed) },
+                    onSelected = { onAction(VehicleRegistrationUiAction.ClienteSelected(it)) },
+                    testTag = "cliente_input",
+                )
+                VehicleDropdownField(
+                    label = stringResource(R.string.registration_cedis),
+                    value = state.cedis.value,
+                    displayValue = state.regions.firstOrNull { it.id == state.cedis.value }?.name.orEmpty(),
+                    options = state.regions.map { it.id to it.name },
+                    expanded = state.showCedisMenu,
+                    errorMessage = state.cedis.errorMessage,
+                    onToggle = { onAction(VehicleRegistrationUiAction.CedisMenuToggled) },
+                    onDismiss = { onAction(VehicleRegistrationUiAction.CedisMenuDismissed) },
+                    onSelected = { onAction(VehicleRegistrationUiAction.CedisSelected(it)) },
                     testTag = "cedis_input",
                 )
+                VehicleDropdownField(
+                    label = stringResource(R.string.registration_order),
+                    value = state.orden.value,
+                    displayValue = state.orders.firstOrNull { it.id == state.orden.value }?.displayName.orEmpty(),
+                    options = state.orders
+                        .filter { it.clientCompanyId == state.cliente.value }
+                        .map { it.id to it.displayName },
+                    expanded = state.showOrdenMenu,
+                    errorMessage = state.orden.errorMessage,
+                    onToggle = { onAction(VehicleRegistrationUiAction.OrdenMenuToggled) },
+                    onDismiss = { onAction(VehicleRegistrationUiAction.OrdenMenuDismissed) },
+                    onSelected = { onAction(VehicleRegistrationUiAction.OrdenSelected(it)) },
+                    testTag = "orden_input",
+                )
                 VehicleTextField(
-                    value = state.numeroCliente.value,
-                    onValueChange = { onAction(VehicleRegistrationUiAction.NumeroClienteChanged(it)) },
-                    label = stringResource(R.string.registration_numero_cliente),
-                    errorMessage = state.numeroCliente.errorMessage,
+                    value = state.marca.value,
+                    onValueChange = { onAction(VehicleRegistrationUiAction.MarcaChanged(it)) },
+                    label = stringResource(R.string.registration_marca),
+                    errorMessage = state.marca.errorMessage,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    testTag = "marca_input",
+                )
+                VehicleTextField(
+                    value = state.modelo.value,
+                    onValueChange = { onAction(VehicleRegistrationUiAction.ModeloChanged(it)) },
+                    label = stringResource(R.string.registration_modelo),
+                    errorMessage = state.modelo.errorMessage,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    testTag = "numero_cliente_input",
+                    testTag = "modelo_input",
                 )
 
                 state.globalErrorMessage?.let { message ->
@@ -214,6 +265,64 @@ fun VehicleRegistrationScreen(
                 onConfirm = { onAction(VehicleRegistrationUiAction.SignOutConfirmed) },
                 onDismiss = { onAction(VehicleRegistrationUiAction.SignOutDismissed) },
                 modifier = Modifier.testTag("vehicle_registration_sign_out_dialog"),
+            )
+        }
+    }
+}
+
+@Composable
+private fun VehicleDropdownField(
+    label: String,
+    value: String,
+    displayValue: String,
+    options: List<Pair<String, String>>,
+    expanded: Boolean,
+    errorMessage: String?,
+    onToggle: () -> Unit,
+    onDismiss: () -> Unit,
+    onSelected: (String) -> Unit,
+    testTag: String,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Box(modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(
+                onClick = onToggle,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag(testTag),
+            ) {
+                Text(
+                    text = displayValue.ifBlank { stringResource(R.string.registration_select_placeholder) },
+                    color = if (value.isBlank()) {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    },
+                )
+            }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = onDismiss,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                options.forEach { (optionValue, optionLabel) ->
+                    DropdownMenuItem(
+                        text = { Text(optionLabel) },
+                        onClick = { onSelected(optionValue) },
+                    )
+                }
+            }
+        }
+        if (errorMessage != null) {
+            Text(
+                text = errorMessage,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
             )
         }
     }

@@ -32,6 +32,7 @@ data class AssignedOrderDto(
     val orderUnitId: Long,
     val orderId: Long,
     val orderNumber: String,
+    val clientCompanyId: Long,
     val clientCompanyName: String,
     val regionName: String,
     val scheduledAt: String,
@@ -39,6 +40,38 @@ data class AssignedOrderDto(
     val vehiclePlate: String,
     val vehicleCategory: String,
     val draftInspectionId: Long?,
+)
+
+data class VehicleClientDto(
+    val id: Long,
+    val name: String,
+    val regionId: Long?,
+)
+
+data class VehicleRegionDto(
+    val id: Long,
+    val name: String,
+)
+
+data class CreateVehicleRequestDto(
+    val clientCompanyId: Long,
+    val verificationOrderId: Long? = null,
+    val plate: String,
+    val vin: String,
+    val category: String = "N2",
+    val brand: String,
+    val model: String = "Sin modelo",
+)
+
+data class VehicleDto(
+    val id: Long,
+    val clientCompanyId: Long,
+    val clientCompanyName: String,
+    val plate: String,
+    val vin: String,
+    val category: String,
+    val brand: String,
+    val model: String,
 )
 
 data class CreateInspectionRequestDto(

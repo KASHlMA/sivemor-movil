@@ -1,6 +1,5 @@
 package com.sivemore.mobile.feature.luces
 
-import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -33,7 +32,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sivemore.mobile.R
 import com.sivemore.mobile.app.designsystem.BrandedHeader
@@ -48,8 +46,8 @@ import com.sivemore.mobile.feature.inspection.InspectionPauseDialog
 import com.sivemore.mobile.feature.inspection.InspectionFlowUiState
 import com.sivemore.mobile.feature.inspection.InspectionFlowViewModel
 import com.sivemore.mobile.feature.inspection.InspectionQuestionItem
+import com.sivemore.mobile.feature.inspection.createPersistentCaptureUri
 import com.sivemore.mobile.preview.PhonePreview
-import java.io.File
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -99,7 +97,7 @@ fun LucesRoute(
         onAction = viewModel::onAction,
         onTakePhoto = {
             if (state.canAddMorePhotos) {
-                val captureUri = createCaptureUri(context)
+                val captureUri = createPersistentCaptureUri(context)
                 pendingCaptureUri = captureUri
                 cameraLauncher.launch(captureUri)
             } else {
@@ -268,15 +266,6 @@ private fun LucesInspectionCard(
     }
 }
 
-private fun createCaptureUri(context: Context): Uri {
-    val imageDir = File(context.cacheDir, "images").apply { mkdirs() }
-    val imageFile = File.createTempFile("capture_", ".jpg", imageDir)
-    return FileProvider.getUriForFile(
-        context,
-        "${context.packageName}.fileprovider",
-        imageFile,
-    )
-}
 
 @PhonePreview
 @Composable

@@ -4,6 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import com.sivemore.mobile.domain.model.AuthCredentials
 import com.sivemore.mobile.domain.model.AuthenticatedUser
 import com.sivemore.mobile.domain.model.Vehicle
+import com.sivemore.mobile.domain.model.VehicleClient
+import com.sivemore.mobile.domain.model.VehicleRegion
 import com.sivemore.mobile.domain.model.VehicleSummary
 import com.sivemore.mobile.domain.repository.AuthRepository
 import com.sivemore.mobile.domain.repository.VehicleRepository
@@ -39,8 +41,11 @@ class VehicleViewModelTest {
 
         viewModel.onAction(VehicleRegistrationUiAction.PlacaChanged("MOR-TQ8-452"))
         viewModel.onAction(VehicleRegistrationUiAction.SerieChanged("4S3BMMB68B3286050"))
-        viewModel.onAction(VehicleRegistrationUiAction.CedisChanged("Morelos"))
-        viewModel.onAction(VehicleRegistrationUiAction.NumeroClienteChanged("1500"))
+        viewModel.onAction(VehicleRegistrationUiAction.TipoSelected("N2"))
+        viewModel.onAction(VehicleRegistrationUiAction.ClienteSelected("1500"))
+        viewModel.onAction(VehicleRegistrationUiAction.CedisSelected("20"))
+        viewModel.onAction(VehicleRegistrationUiAction.MarcaChanged("Nissan"))
+        viewModel.onAction(VehicleRegistrationUiAction.ModeloChanged("NP300"))
         viewModel.onAction(VehicleRegistrationUiAction.SaveVehicle)
         advanceUntilIdle()
 
@@ -61,7 +66,7 @@ class VehicleViewModelTest {
         advanceUntilIdle()
 
         assertEquals("Este campo es obligatorio", viewModel.uiState.value.placa.errorMessage)
-        assertEquals("Este campo es obligatorio", viewModel.uiState.value.cedis.errorMessage)
+        assertEquals("Este campo es obligatorio", viewModel.uiState.value.cliente.errorMessage)
         assertFalse(viewModel.uiState.value.isFormValid)
     }
 
@@ -109,9 +114,9 @@ class VehicleViewModelTest {
             id = "vehicle-1",
             numeroEconomico = "1500",
             placas = "MOR-TQ8-452",
-            marca = "Morelos",
-            modelo = "",
-            tipoVehiculo = "",
+            marca = "Nissan",
+            modelo = "NP300",
+            tipoVehiculo = "N2",
             vin = "4S3BMMB68B3286050",
         )
         val repository = RecordingVehicleRepository(existingVehicle = existingVehicle)
@@ -124,8 +129,10 @@ class VehicleViewModelTest {
         advanceUntilIdle()
 
         assertEquals("MOR-TQ8-452", viewModel.uiState.value.placa.value)
-        assertEquals("Morelos", viewModel.uiState.value.cedis.value)
-        assertEquals("1500", viewModel.uiState.value.numeroCliente.value)
+        assertEquals("20", viewModel.uiState.value.cedis.value)
+        assertEquals("1500", viewModel.uiState.value.cliente.value)
+        assertEquals("Nissan", viewModel.uiState.value.marca.value)
+        assertEquals("NP300", viewModel.uiState.value.modelo.value)
         assertTrue(viewModel.uiState.value.isEditing)
     }
 
@@ -133,6 +140,12 @@ class VehicleViewModelTest {
         private val existingVehicle: Vehicle? = null,
     ) : VehicleRepository {
         var savedVehicle: Vehicle? = null
+
+        override suspend fun loadClients(): List<VehicleClient> =
+            listOf(VehicleClient(id = "1500", name = "Transportes Morelos", regionId = "20"))
+
+        override suspend fun loadRegions(): List<VehicleRegion> =
+            listOf(VehicleRegion(id = "20", name = "Region Sur"))
 
         override suspend fun loadVehicles(query: String): List<VehicleSummary> = emptyList()
 

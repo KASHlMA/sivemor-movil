@@ -15,6 +15,15 @@ interface MobileApiService {
     @GET("mobile/orders")
     suspend fun listOrders(): List<AssignedOrderDto>
 
+    @GET("mobile/clients")
+    suspend fun listClients(): List<VehicleClientDto>
+
+    @GET("mobile/regions")
+    suspend fun listRegions(): List<VehicleRegionDto>
+
+    @POST("mobile/vehicles")
+    suspend fun createVehicle(@Body request: CreateVehicleRequestDto): VehicleDto
+
     @POST("mobile/inspections")
     suspend fun createInspection(@Body request: CreateInspectionRequestDto): InspectionDraftDto
 
