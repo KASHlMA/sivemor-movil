@@ -26,6 +26,7 @@ fun SessionUserDto.toDomain(): AuthenticatedUser = AuthenticatedUser(
 
 fun AssignedOrderDto.toDomain(): VehicleSummary = VehicleSummary(
     id = orderUnitId.toString(),
+    editableVehicleId = vehicleUnitId.toString(),
     plates = vehiclePlate,
     serialNumber = orderNumber,
     vehicleNumber = clientCompanyName,
@@ -37,17 +38,6 @@ fun AssignedOrderDto.toDomain(): VehicleSummary = VehicleSummary(
     completedDate = regionName,
     hasPendingVerification = draftInspectionId != null,
     draftInspectionId = draftInspectionId?.toString(),
-)
-
-fun AssignedOrderDto.toEditableVehicle(): Vehicle = Vehicle(
-    id = orderUnitId.toString(),
-    numeroEconomico = clientCompanyName,
-    placas = vehiclePlate,
-    marca = regionName,
-    modelo = "",
-    tipoVehiculo = vehicleCategory,
-    vin = orderNumber,
-    verificationOrderId = orderId.toString(),
 )
 
 fun AssignedOrderDto.toVehicleOrder(): VehicleOrder = VehicleOrder(

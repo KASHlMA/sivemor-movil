@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun VehicleLookupRoute(
+    onNavigateBack: () -> Unit,
     onOpenVerification: (String) -> Unit,
     onEditVehicle: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -55,6 +56,7 @@ fun VehicleLookupRoute(
     VehicleLookupScreen(
         state = state,
         modifier = modifier,
+        onNavigateBack = onNavigateBack,
         onAction = viewModel::onAction,
     )
 }
@@ -62,6 +64,7 @@ fun VehicleLookupRoute(
 @Composable
 fun VehicleLookupScreen(
     state: VehicleLookupUiState,
+    onNavigateBack: () -> Unit,
     onAction: (VehicleLookupUiAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -81,7 +84,10 @@ fun VehicleLookupScreen(
             .testTag("vehicle_lookup_screen"),
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            BrandedHeader()
+            BrandedHeader(
+                showBackButton = true,
+                onBackClick = onNavigateBack,
+            )
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -139,7 +145,7 @@ fun VehicleLookupScreen(
                             completedDate = vehicle.completedDate,
                             status = vehicle.status,
                             onClick = { onAction(VehicleLookupUiAction.VehicleTapped(vehicle.id)) },
-                            onEditClick = { onAction(VehicleLookupUiAction.EditVehicleTapped(vehicle.id)) },
+                            onEditClick = { onAction(VehicleLookupUiAction.EditVehicleTapped(vehicle.editableVehicleId)) },
                             modifier = Modifier.testTag("vehicle_card_${vehicle.id}"),
                         )
                     }
@@ -172,6 +178,7 @@ private fun VehicleLookupScreenPreview() {
                 vehicles = listOf(
                     com.sivemore.mobile.domain.model.VehicleSummary(
                         id = "1",
+                        editableVehicleId = "101",
                         plates = "MOR-123-A",
                         serialNumber = "ORD-2026-001",
                         vehicleNumber = "Transportes Morelos",
@@ -183,6 +190,7 @@ private fun VehicleLookupScreenPreview() {
                     )
                 ),
             ),
+            onNavigateBack = {},
             onAction = {},
         )
     }

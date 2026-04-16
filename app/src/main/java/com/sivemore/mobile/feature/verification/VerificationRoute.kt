@@ -97,6 +97,7 @@ fun VerificationRoute(
 
     VerificationScreen(
         state = state,
+        onBackToLookup = onBackToLookup,
         modifier = modifier,
         onAction = viewModel::onAction,
         onTakePhoto = {
@@ -114,6 +115,7 @@ fun VerificationRoute(
 @Composable
 fun VerificationScreen(
     state: VerificationUiState,
+    onBackToLookup: () -> Unit,
     onAction: (VerificationUiAction) -> Unit,
     onTakePhoto: () -> Unit,
     modifier: Modifier = Modifier,
@@ -142,6 +144,8 @@ fun VerificationScreen(
         Column(modifier = Modifier.fillMaxSize()) {
             BrandedHeader(
                 modifier = Modifier.systemBarsPadding(),
+                showBackButton = true,
+                onBackClick = onBackToLookup,
                 showAction = true,
                 onActionClick = { onAction(VerificationUiAction.LogoutRequested) },
             )
@@ -470,6 +474,7 @@ private fun VerificationScreenPreview() {
                 ),
                 commentDraft = "",
             ),
+            onBackToLookup = {},
             onAction = {},
             onTakePhoto = {},
         )

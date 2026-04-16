@@ -24,6 +24,15 @@ interface MobileApiService {
     @POST("mobile/vehicles")
     suspend fun createVehicle(@Body request: CreateVehicleRequestDto): VehicleDto
 
+    @GET("mobile/vehicles/{id}")
+    suspend fun getVehicle(@Path("id") vehicleId: Long): VehicleDto
+
+    @PUT("mobile/vehicles/{id}")
+    suspend fun updateVehicle(
+        @Path("id") vehicleId: Long,
+        @Body request: UpdateVehicleRequestDto,
+    ): VehicleDto
+
     @POST("mobile/inspections")
     suspend fun createInspection(@Body request: CreateInspectionRequestDto): InspectionDraftDto
 

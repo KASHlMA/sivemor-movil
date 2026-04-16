@@ -91,6 +91,8 @@ fun VehicleRegistrationScreen(
         ) {
             Box {
                 BrandedHeader(
+                    showBackButton = true,
+                    onBackClick = { onAction(VehicleRegistrationUiAction.BackToMenuSelected) },
                     showAction = true,
                     onActionClick = { onAction(VehicleRegistrationUiAction.OptionsMenuToggled) },
                 )

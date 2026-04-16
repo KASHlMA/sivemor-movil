@@ -7,6 +7,7 @@ import com.sivemore.mobile.domain.model.EvidenceUpload
 import com.sivemore.mobile.domain.model.InspectionFlowAnswerDraft
 import com.sivemore.mobile.domain.model.Vehicle
 import com.sivemore.mobile.domain.model.VehicleClient
+import com.sivemore.mobile.domain.model.VehicleOrder
 import com.sivemore.mobile.domain.model.VehicleRegion
 import com.sivemore.mobile.domain.model.VerificationSession
 import com.sivemore.mobile.domain.model.VehicleSummary
@@ -59,6 +60,7 @@ class SessionActionsViewModelTest {
         vehicleRepository = object : VehicleRepository {
             override suspend fun loadClients(): List<VehicleClient> = emptyList()
             override suspend fun loadRegions(): List<VehicleRegion> = emptyList()
+            override suspend fun loadOrders(): List<VehicleOrder> = emptyList()
             override suspend fun loadVehicles(query: String): List<VehicleSummary> = listOf(sampleVehicle())
             override suspend fun loadVehicle(vehicleId: String): VehicleSummary? = sampleVehicle(id = vehicleId)
             override suspend fun loadVehicleForEdit(vehicleId: String): Vehicle? = null

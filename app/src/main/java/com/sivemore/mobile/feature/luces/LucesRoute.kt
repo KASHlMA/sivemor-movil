@@ -54,6 +54,7 @@ import kotlinx.coroutines.flow.collectLatest
 fun LucesRoute(
     viewModel: InspectionFlowViewModel,
     onNavigateNext: () -> Unit,
+    onNavigateBack: () -> Unit,
     onBackToLookup: () -> Unit,
     onSignedOut: () -> Unit,
     modifier: Modifier = Modifier,
@@ -95,6 +96,7 @@ fun LucesRoute(
     LucesScreen(
         state = state,
         onAction = viewModel::onAction,
+        onNavigateBack = onNavigateBack,
         onTakePhoto = {
             if (state.canAddMorePhotos) {
                 val captureUri = createPersistentCaptureUri(context)
@@ -112,6 +114,7 @@ fun LucesRoute(
 fun LucesScreen(
     state: InspectionFlowUiState,
     onAction: (InspectionFlowAction) -> Unit,
+    onNavigateBack: () -> Unit,
     onTakePhoto: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -128,6 +131,8 @@ fun LucesScreen(
         topBar = {
             BrandedHeader(
                 modifier = Modifier.systemBarsPadding(),
+                showBackButton = true,
+                onBackClick = onNavigateBack,
                 showAction = true,
                 onActionClick = { onAction(InspectionFlowAction.LogoutRequested) },
             )
@@ -283,6 +288,7 @@ private fun LucesScreenPreview() {
                 otrosSection = com.sivemore.mobile.feature.inspection.InspectionSectionCatalog.otrosSection(),
             ),
             onAction = {},
+            onNavigateBack = {},
             onTakePhoto = {},
         )
     }

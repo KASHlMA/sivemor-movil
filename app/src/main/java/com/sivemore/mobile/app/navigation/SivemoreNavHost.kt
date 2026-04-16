@@ -68,6 +68,12 @@ fun SivemoreNavHost(
         }
         composable(AppDestination.VehicleLookup.route) {
             VehicleLookupRoute(
+                onNavigateBack = {
+                    navController.popBackStack(
+                        route = AppDestination.VehicleMenu.route,
+                        inclusive = false,
+                    )
+                },
                 onOpenVerification = { vehicleId ->
                     navController.navigate(AppDestination.VerificationFlow.createRoute(vehicleId))
                 },
@@ -120,6 +126,12 @@ fun SivemoreNavHost(
                     viewModel = viewModel,
                     onNavigateNext = {
                         navController.navigate(AppDestination.Llantas.route)
+                    },
+                    onNavigateBack = {
+                        navController.popBackStack(
+                            route = AppDestination.VehicleLookup.route,
+                            inclusive = false,
+                        )
                     },
                     onBackToLookup = {
                         navController.popBackStack(

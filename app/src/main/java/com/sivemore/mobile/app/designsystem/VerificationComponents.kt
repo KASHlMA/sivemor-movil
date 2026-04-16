@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -121,6 +122,8 @@ fun BrandedLoadingScreen(
 @Composable
 fun BrandedHeader(
     modifier: Modifier = Modifier,
+    showBackButton: Boolean = false,
+    onBackClick: (() -> Unit)? = null,
     showAction: Boolean = false,
     onActionClick: (() -> Unit)? = null,
 ) {
@@ -135,9 +138,14 @@ fun BrandedHeader(
                 .fillMaxSize()
                 .padding(horizontal = 17.dp, vertical = 18.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            if (showBackButton && onBackClick != null) {
+                HeaderBackButton(onClick = onBackClick)
+            }
+
             Row(
+                modifier = Modifier.weight(1f),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
@@ -166,6 +174,30 @@ fun BrandedHeader(
                 HeaderActionButton(onClick = onActionClick)
             }
         }
+    }
+}
+
+@Composable
+fun HeaderBackButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .size(width = 40.dp, height = 38.dp)
+            .background(color = BrandGreenDeep, shape = RoundedCornerShape(5.dp))
+            .clickable(
+                onClick = onClick,
+                role = Role.Button,
+            )
+            .testTag("header_back"),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.ic_header_back),
+            contentDescription = stringResource(R.string.header_back),
+            tint = Snow,
+        )
     }
 }
 

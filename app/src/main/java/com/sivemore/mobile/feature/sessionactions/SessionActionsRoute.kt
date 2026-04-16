@@ -45,6 +45,7 @@ fun SessionActionsRoute(
 
     SessionActionsScreen(
         state = state,
+        onBackToLookup = onBackToLookup,
         modifier = modifier,
         onAction = viewModel::onAction,
     )
@@ -53,6 +54,7 @@ fun SessionActionsRoute(
 @Composable
 fun SessionActionsScreen(
     state: SessionActionsUiState,
+    onBackToLookup: () -> Unit,
     onAction: (SessionActionsUiAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -67,7 +69,10 @@ fun SessionActionsScreen(
             .background(MaterialTheme.colorScheme.background)
             .testTag("session_actions_screen"),
     ) {
-        BrandedHeader()
+        BrandedHeader(
+            showBackButton = true,
+            onBackClick = onBackToLookup,
+        )
         VerificationCard(
             modifier = Modifier.padding(24.dp),
         ) {
@@ -145,6 +150,7 @@ private fun SessionActionsPreview() {
                 isLoading = false,
                 vehicleLabel = "VUH-TQ8-453",
             ),
+            onBackToLookup = {},
             onAction = {},
         )
     }

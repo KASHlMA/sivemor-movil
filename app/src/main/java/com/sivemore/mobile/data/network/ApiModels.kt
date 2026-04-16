@@ -63,6 +63,8 @@ data class CreateVehicleRequestDto(
     val model: String = "Sin modelo",
 )
 
+typealias UpdateVehicleRequestDto = CreateVehicleRequestDto
+
 data class VehicleDto(
     val id: Long,
     val clientCompanyId: Long,

@@ -27,6 +27,7 @@ enum class EvidenceSource(val label: String) {
 
 data class VehicleSummary(
     val id: String,
+    val editableVehicleId: String,
     val plates: String,
     val serialNumber: String,
     val vehicleNumber: String,

@@ -2,7 +2,6 @@ package com.sivemore.mobile.data.repository
 
 import com.sivemore.mobile.data.network.MobileApiService
 import com.sivemore.mobile.data.network.CreateVehicleRequestDto
-import com.sivemore.mobile.data.network.toEditableVehicle
 import com.sivemore.mobile.data.network.toDomain
 import com.sivemore.mobile.data.network.toVehicleOrder
 import com.sivemore.mobile.domain.model.Vehicle
@@ -42,24 +41,28 @@ class RealVehicleRepository @Inject constructor(
 
     override suspend fun loadVehicleForEdit(vehicleId: String): Vehicle? =
         registrationStore.loadEditableVehicle(vehicleId)
-            ?: mobileApiService.listOrders()
-                .firstOrNull { it.orderUnitId.toString() == vehicleId }
-                ?.toEditableVehicle()
+            ?: mobileApiService.getVehicle(vehicleId.toLong()).toDomain()
 
-    override suspend fun saveVehicle(vehicle: Vehicle): Vehicle =
-        mobileApiService.createVehicle(
-            CreateVehicleRequestDto(
-                clientCompanyId = vehicle.numeroEconomico.trim().toLongOrNull()
-                    ?: error("El numero de cliente debe ser numerico."),
-                verificationOrderId = vehicle.verificationOrderId
-                    ?.trim()
-                    ?.takeIf { it.isNotBlank() }
-                    ?.toLongOrNull(),
-                plate = vehicle.placas,
-                vin = vehicle.vin,
-                category = vehicle.tipoVehiculo.ifBlank { "N2" },
-                brand = vehicle.marca.ifBlank { "Sin marca" },
-                model = vehicle.modelo.ifBlank { "Sin modelo" },
-            ),
-        ).toDomain()
+    override suspend fun saveVehicle(vehicle: Vehicle): Vehicle {
+        val request = CreateVehicleRequestDto(
+            clientCompanyId = vehicle.numeroEconomico.trim().toLongOrNull()
+                ?: error("El numero de cliente debe ser numerico."),
+            verificationOrderId = vehicle.verificationOrderId
+                ?.trim()
+                ?.takeIf { it.isNotBlank() }
+                ?.toLongOrNull(),
+            plate = vehicle.placas,
+            vin = vehicle.vin,
+            category = vehicle.tipoVehiculo.ifBlank { "N2" },
+            brand = vehicle.marca.ifBlank { "Sin marca" },
+            model = vehicle.modelo.ifBlank { "Sin modelo" },
+        )
+
+        val remoteVehicleId = vehicle.id.trim().toLongOrNull()
+        return if (remoteVehicleId != null) {
+            mobileApiService.updateVehicle(remoteVehicleId, request).toDomain()
+        } else {
+            mobileApiService.createVehicle(request).toDomain()
+        }
+    }
 }

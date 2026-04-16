@@ -22,6 +22,7 @@ internal fun sampleVehicle(
     hasPendingVerification: Boolean = false,
 ): VehicleSummary = VehicleSummary(
     id = id,
+    editableVehicleId = "101",
     plates = "MOR-123-A",
     serialNumber = "ORD-2026-001",
     vehicleNumber = "Transportes Morelos",

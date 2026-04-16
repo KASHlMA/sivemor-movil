@@ -135,6 +135,7 @@ class VehicleRegistrationStore @Inject constructor() {
 
 private fun Vehicle.toSummary(admissionDate: String): VehicleSummary = VehicleSummary(
     id = id,
+    editableVehicleId = id,
     plates = placas,
     serialNumber = vin,
     vehicleNumber = numeroEconomico,

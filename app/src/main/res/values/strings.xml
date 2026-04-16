@@ -3,6 +3,7 @@
 
     <string name="brand_name">SIVEMOR</string>
     <string name="brand_subtitle">Sistema de Verificacion de Morelos</string>
+    <string name="header_back">Regresar</string>
 
     <string name="auth_title">Iniciar sesion</string>
     <string name="auth_subtitle">Sistema de Verificacion de Morelos</string>

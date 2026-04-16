@@ -5,6 +5,7 @@ import com.sivemore.mobile.domain.model.AuthCredentials
 import com.sivemore.mobile.domain.model.AuthenticatedUser
 import com.sivemore.mobile.domain.model.Vehicle
 import com.sivemore.mobile.domain.model.VehicleClient
+import com.sivemore.mobile.domain.model.VehicleOrder
 import com.sivemore.mobile.domain.model.VehicleRegion
 import com.sivemore.mobile.domain.model.VehicleSummary
 import com.sivemore.mobile.domain.repository.AuthRepository
@@ -146,6 +147,8 @@ class VehicleViewModelTest {
 
         override suspend fun loadRegions(): List<VehicleRegion> =
             listOf(VehicleRegion(id = "20", name = "Region Sur"))
+
+        override suspend fun loadOrders(): List<VehicleOrder> = emptyList()
 
         override suspend fun loadVehicles(query: String): List<VehicleSummary> = emptyList()
 
