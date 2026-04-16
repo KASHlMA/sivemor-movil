@@ -175,7 +175,7 @@ fun AuthScreen(
                 )
             }
 
-            if (state.diagnosticMessage != null) {
++            if (state.diagnosticMessage != null) {
                 Text(
                     text = state.diagnosticMessage,
                     style = MaterialTheme.typography.bodySmall,
