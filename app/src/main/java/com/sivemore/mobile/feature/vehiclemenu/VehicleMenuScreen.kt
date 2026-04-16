@@ -112,8 +112,13 @@ fun VehicleMenuScreen(
                         .fillMaxWidth()
                         .height(58.dp)
                         .testTag("vehicle_menu_registration"),
-                    enabled = !state.isSigningOut,
+                    enabled = false,
                     onClick = { onAction(VehicleMenuUiAction.OpenRegistration) },
+                )
+                Text(
+                    text = stringResource(R.string.vehicle_menu_registration_helper),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.72f),
                 )
             }
         }

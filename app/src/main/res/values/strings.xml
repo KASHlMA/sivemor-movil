@@ -18,6 +18,7 @@
     <string name="vehicle_menu_title">Menu</string>
     <string name="vehicle_menu_visualization">Visualizacion de vehiculos</string>
     <string name="vehicle_menu_registration">Registrar vehiculo</string>
+    <string name="vehicle_menu_registration_helper">El registro manual esta deshabilitado porque todavia no sincroniza con el backend ni aparece en web-admin.</string>
 
     <string name="vehicle_search_title">Visualizacion de vehiculos</string>
     <string name="vehicle_search_description">Consulta los vehiculos asignados al tecnico y abre la verificacion correspondiente.</string>
