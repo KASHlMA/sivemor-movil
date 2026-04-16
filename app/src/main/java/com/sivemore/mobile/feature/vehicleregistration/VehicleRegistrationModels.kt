@@ -1,7 +1,6 @@
 package com.sivemore.mobile.feature.vehicleregistration
 
 import com.sivemore.mobile.domain.model.VehicleClient
-import com.sivemore.mobile.domain.model.VehicleOrder
 import com.sivemore.mobile.domain.model.VehicleRegion
 
 data class VehicleFormFieldState(
@@ -16,16 +15,13 @@ data class VehicleRegistrationUiState(
     val tipo: VehicleFormFieldState = VehicleFormFieldState(),
     val cliente: VehicleFormFieldState = VehicleFormFieldState(),
     val cedis: VehicleFormFieldState = VehicleFormFieldState(),
-    val orden: VehicleFormFieldState = VehicleFormFieldState(),
     val marca: VehicleFormFieldState = VehicleFormFieldState(),
     val modelo: VehicleFormFieldState = VehicleFormFieldState(),
     val clients: List<VehicleClient> = emptyList(),
     val regions: List<VehicleRegion> = emptyList(),
-    val orders: List<VehicleOrder> = emptyList(),
     val showTipoMenu: Boolean = false,
     val showClienteMenu: Boolean = false,
     val showCedisMenu: Boolean = false,
-    val showOrdenMenu: Boolean = false,
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     val showOptionsMenu: Boolean = false,
@@ -51,7 +47,6 @@ sealed interface VehicleRegistrationUiAction {
     data class TipoSelected(val value: String) : VehicleRegistrationUiAction
     data class ClienteSelected(val value: String) : VehicleRegistrationUiAction
     data class CedisSelected(val value: String) : VehicleRegistrationUiAction
-    data class OrdenSelected(val value: String) : VehicleRegistrationUiAction
     data class MarcaChanged(val value: String) : VehicleRegistrationUiAction
     data class ModeloChanged(val value: String) : VehicleRegistrationUiAction
     data object TipoMenuToggled : VehicleRegistrationUiAction
@@ -60,8 +55,6 @@ sealed interface VehicleRegistrationUiAction {
     data object ClienteMenuDismissed : VehicleRegistrationUiAction
     data object CedisMenuToggled : VehicleRegistrationUiAction
     data object CedisMenuDismissed : VehicleRegistrationUiAction
-    data object OrdenMenuToggled : VehicleRegistrationUiAction
-    data object OrdenMenuDismissed : VehicleRegistrationUiAction
     data object OptionsMenuToggled : VehicleRegistrationUiAction
     data object OptionsMenuDismissed : VehicleRegistrationUiAction
     data object BackToMenuSelected : VehicleRegistrationUiAction

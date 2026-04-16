@@ -319,11 +319,7 @@ class InspectionFlowViewModel @Inject constructor(
         if (!uiState.value.isEntireVerificationComplete) {
             _uiState.update {
                 it.copy(
-                    errorMessage = if (it.totalEvidenceCount < 3) {
-                        "Debes agregar al menos 3 evidencias antes de finalizar la verificacion."
-                    } else {
-                        "Debes completar todas las secciones antes de finalizar la verificacion."
-                    }
+                    errorMessage = "Debes completar todas las secciones antes de finalizar la verificacion."
                 )
             }
             return
@@ -532,8 +528,7 @@ data class InspectionFlowUiState(
                 aireFrenosSection.isComplete &&
                 motorEmisionesSection.isComplete &&
                 otrosSection.isComplete &&
-                remainingSectionsComplete &&
-                totalEvidenceCount >= 3
+                remainingSectionsComplete
         }
 }
 

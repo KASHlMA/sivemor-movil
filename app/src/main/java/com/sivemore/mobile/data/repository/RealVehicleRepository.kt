@@ -3,8 +3,8 @@ package com.sivemore.mobile.data.repository
 import com.sivemore.mobile.data.network.MobileApiService
 import com.sivemore.mobile.data.network.CreateVehicleRequestDto
 import com.sivemore.mobile.data.network.toDomain
-import com.sivemore.mobile.data.network.toVehicleOrder
 import com.sivemore.mobile.domain.model.Vehicle
+import com.sivemore.mobile.domain.model.VehicleOrder
 import com.sivemore.mobile.domain.model.VehicleSummary
 import com.sivemore.mobile.domain.repository.VehicleRepository
 import javax.inject.Inject
@@ -19,7 +19,7 @@ class RealVehicleRepository @Inject constructor(
 
     override suspend fun loadRegions() = mobileApiService.listRegions().map { it.toDomain() }
 
-    override suspend fun loadOrders() = mobileApiService.listOrders().map { it.toVehicleOrder() }
+    override suspend fun loadOrders(): List<VehicleOrder> = emptyList()
 
     override suspend fun loadVehicles(query: String): List<VehicleSummary> {
         val normalizedQuery = query.trim()
@@ -47,10 +47,6 @@ class RealVehicleRepository @Inject constructor(
         val request = CreateVehicleRequestDto(
             clientCompanyId = vehicle.numeroEconomico.trim().toLongOrNull()
                 ?: error("El numero de cliente debe ser numerico."),
-            verificationOrderId = vehicle.verificationOrderId
-                ?.trim()
-                ?.takeIf { it.isNotBlank() }
-                ?.toLongOrNull(),
             plate = vehicle.placas,
             vin = vehicle.vin,
             category = vehicle.tipoVehiculo.ifBlank { "N2" },

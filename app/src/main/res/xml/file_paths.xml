@@ -3,4 +3,7 @@
     <cache-path
         name="captured_images"
         path="images/" />
+    <files-path
+        name="captured_evidence"
+        path="captured-evidence/" />
 </paths>

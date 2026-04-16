@@ -93,13 +93,12 @@
 
     <string name="registration_title">Registro de vehiculo</string>
     <string name="registration_edit_title">Editar vehiculo</string>
-    <string name="registration_subtitle">Captura la informacion obligatoria de la unidad antes de iniciar la evaluacion.</string>
+    <string name="registration_subtitle">Captura la informacion obligatoria de la unidad antes de iniciar la evaluacion. No necesitas asignar una orden.</string>
     <string name="registration_placa">Placa</string>
     <string name="registration_serie">Numero de serie</string>
     <string name="registration_tipo">Tipo</string>
     <string name="registration_cliente">Cliente</string>
     <string name="registration_cedis">CEDIS</string>
-    <string name="registration_order">Orden</string>
     <string name="registration_marca">Marca</string>
     <string name="registration_modelo">Modelo</string>
     <string name="registration_select_placeholder">Selecciona una opcion</string>

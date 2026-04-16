@@ -351,7 +351,11 @@ private fun EvidenceImage(
             }
         },
         update = { imageView ->
-            imageView.setImageURI(Uri.parse(evidence.previewUri))
+            runCatching {
+                imageView.setImageURI(Uri.parse(evidence.previewUri))
+            }.onFailure {
+                imageView.setImageDrawable(null)
+            }
         },
     )
 }

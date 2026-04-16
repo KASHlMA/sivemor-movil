@@ -49,7 +49,6 @@ class VehicleViewModel @Inject constructor(
             is VehicleRegistrationUiAction.TipoSelected -> updateTipo(action.value)
             is VehicleRegistrationUiAction.ClienteSelected -> updateCliente(action.value)
             is VehicleRegistrationUiAction.CedisSelected -> updateCedis(action.value)
-            is VehicleRegistrationUiAction.OrdenSelected -> updateOrden(action.value)
             is VehicleRegistrationUiAction.MarcaChanged -> updateMarca(action.value)
             is VehicleRegistrationUiAction.ModeloChanged -> updateModelo(action.value)
             VehicleRegistrationUiAction.TipoMenuToggled -> _uiState.update {
@@ -69,12 +68,6 @@ class VehicleViewModel @Inject constructor(
             }
             VehicleRegistrationUiAction.CedisMenuDismissed -> _uiState.update {
                 it.copy(showCedisMenu = false)
-            }
-            VehicleRegistrationUiAction.OrdenMenuToggled -> _uiState.update {
-                it.copy(showOrdenMenu = !it.showOrdenMenu, globalErrorMessage = null)
-            }
-            VehicleRegistrationUiAction.OrdenMenuDismissed -> _uiState.update {
-                it.copy(showOrdenMenu = false)
             }
             VehicleRegistrationUiAction.OptionsMenuToggled -> _uiState.update {
                 it.copy(showOptionsMenu = !it.showOptionsMenu, globalErrorMessage = null)
@@ -98,17 +91,15 @@ class VehicleViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, globalErrorMessage = null) }
             runCatching {
-                Triple(
+                Pair(
                     vehicleRepository.loadClients(),
                     vehicleRepository.loadRegions(),
-                    vehicleRepository.loadOrders(),
                 )
-            }.onSuccess { (clients, regions, orders) ->
+            }.onSuccess { (clients, regions) ->
                 _uiState.update {
                     it.copy(
                         clients = clients,
                         regions = regions,
-                        orders = orders,
                         isLoading = false,
                         globalErrorMessage = null,
                     )
@@ -174,7 +165,6 @@ class VehicleViewModel @Inject constructor(
                 } else {
                     it.cedis
                 },
-                orden = VehicleFormFieldState(),
                 showClienteMenu = false,
                 globalErrorMessage = null,
             )
@@ -189,23 +179,6 @@ class VehicleViewModel @Inject constructor(
                     errorMessage = validateRequired(value),
                 ),
                 showCedisMenu = false,
-                globalErrorMessage = null,
-            )
-        }
-    }
-
-    private fun updateOrden(value: String) {
-        _uiState.update {
-            val selectedOrder = it.orders.firstOrNull { order -> order.id == value }
-            it.copy(
-                orden = VehicleFormFieldState(
-                    value = value,
-                    errorMessage = validateRequired(value),
-                ),
-                cliente = selectedOrder?.let { order ->
-                    VehicleFormFieldState(value = order.clientCompanyId, errorMessage = null)
-                } ?: it.cliente,
-                showOrdenMenu = false,
                 globalErrorMessage = null,
             )
         }
@@ -254,7 +227,6 @@ class VehicleViewModel @Inject constructor(
                         modelo = validatedState.modelo.value,
                         tipoVehiculo = validatedState.tipo.value,
                         vin = validatedState.serie.value,
-                        verificationOrderId = validatedState.orden.value,
                     ),
                 )
             }.onSuccess { vehicle ->
@@ -293,7 +265,6 @@ class VehicleViewModel @Inject constructor(
                         serie = VehicleFormFieldState(value = vehicle.vin),
                         tipo = VehicleFormFieldState(value = vehicle.tipoVehiculo),
                         cliente = VehicleFormFieldState(value = vehicle.numeroEconomico),
-                        orden = VehicleFormFieldState(value = vehicle.verificationOrderId.orEmpty()),
                         cedis = VehicleFormFieldState(
                             value = it.clients.firstOrNull { client -> client.id == vehicle.numeroEconomico }
                                 ?.regionId
@@ -338,7 +309,6 @@ private fun VehicleRegistrationUiState.validated(): VehicleRegistrationUiState =
     tipo = tipo.copy(errorMessage = validateRequired(tipo.value)),
     cliente = cliente.copy(errorMessage = validateRequired(cliente.value)),
     cedis = cedis.copy(errorMessage = validateRequired(cedis.value)),
-    orden = orden.copy(errorMessage = null),
     marca = marca.copy(errorMessage = validateRequired(marca.value)),
     modelo = modelo.copy(errorMessage = validateRequired(modelo.value)),
 )

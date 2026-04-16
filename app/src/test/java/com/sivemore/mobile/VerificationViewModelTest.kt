@@ -116,6 +116,24 @@ class VerificationViewModelTest {
     }
 
     @Test
+    fun finishSucceedsWhenAllSectionsAreCompleteWithoutEvidence() = runTest {
+        val repository = StubVerificationRepository(
+            session = sampleSession().copy(
+                sections = sampleSession().sections.map { it.copy(evidence = emptyList()) },
+                evidenceCount = 0,
+            ),
+        )
+        val viewModel = buildViewModel(repository)
+        advanceUntilIdle()
+        val event = async { viewModel.events.first() }
+
+        viewModel.onAction(VerificationUiAction.SubmitRequested)
+        advanceUntilIdle()
+
+        assertEquals(VerificationEvent.Completed, event.await())
+    }
+
+    @Test
     fun logoutSignsOutAndEmitsSignedOut() = runTest {
         val authRepository = StubAuthRepository()
         val viewModel = buildViewModel(authRepository = authRepository)

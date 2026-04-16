@@ -77,7 +77,8 @@ data class VehicleDto(
 )
 
 data class CreateInspectionRequestDto(
-    val orderUnitId: Long,
+    val orderUnitId: Long? = null,
+    val vehicleUnitId: Long? = null,
 )
 
 data class ChecklistQuestionDto(

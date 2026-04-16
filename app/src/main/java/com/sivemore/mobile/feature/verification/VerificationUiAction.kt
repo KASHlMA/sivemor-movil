@@ -54,7 +54,7 @@ data class VerificationUiState(
     val canAddMorePhotos: Boolean = currentSection?.evidence?.size?.let { it < 3 } ?: false
     val isEntireVerificationComplete: Boolean = session?.sections.orEmpty().all { section ->
         section.items.all { !it.required || it.selectedOptionId != null }
-    } && totalEvidenceCount >= 3
+    }
 }
 
 sealed interface VerificationEvent {

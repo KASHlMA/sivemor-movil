@@ -14,11 +14,18 @@ class InspectionDraftResolver @Inject constructor(
 
         val order = mobileApiService.listOrders()
             .firstOrNull { it.orderUnitId.toString() == orderUnitId }
-            ?: error("No se encontró una orden asignada para la unidad $orderUnitId.")
 
-        val draftId = order.draftInspectionId ?: mobileApiService
-            .createInspection(CreateInspectionRequestDto(orderUnitId = orderUnitId.toLong()))
-            .id
+        val draftId = when {
+            order?.draftInspectionId != null -> order.draftInspectionId
+            order != null -> mobileApiService
+                .createInspection(CreateInspectionRequestDto(orderUnitId = orderUnitId.toLong()))
+                .id
+
+            else -> mobileApiService
+                .createInspection(CreateInspectionRequestDto(vehicleUnitId = orderUnitId.toLong()))
+                .id
+        }
+
         draftIds[orderUnitId] = draftId
         return draftId
     }
