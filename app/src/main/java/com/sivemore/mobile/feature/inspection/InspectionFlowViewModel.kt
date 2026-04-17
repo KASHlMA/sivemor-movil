@@ -63,6 +63,7 @@ class InspectionFlowViewModel @Inject constructor(
             is InspectionFlowAction.MotorEmisionesOptionSelected -> updateSingleChoiceAnswer("motor_emisiones", action.questionId, action.optionId)
             is InspectionFlowAction.OtrosOptionSelected -> updateSingleChoiceAnswer("otros", action.questionId, action.optionId)
             is InspectionFlowAction.BirloToggled -> updateBirloState(action.groupId, action.birloIndex, action.checked)
+            is InspectionFlowAction.BirlosCountChanged -> updateBirlosCount(action.groupId, action.value)
             InspectionFlowAction.PreviousClicked -> moveToPreviousSection()
             InspectionFlowAction.NextClicked -> navigateNextIfComplete()
             InspectionFlowAction.CommentDialogOpened -> _uiState.update { it.copy(showCommentDialog = true, errorMessage = null) }
@@ -186,6 +187,19 @@ class InspectionFlowViewModel @Inject constructor(
         _uiState.update { current ->
             current.copy(
                 llantasSection = current.llantasSection.updateBirlosGroup(groupId, birloIndex, checked),
+                errorMessage = null,
+            )
+        }
+    }
+
+    private fun updateBirlosCount(
+        groupId: String,
+        value: String,
+    ) {
+        val parsed = value.toIntOrNull()?.coerceIn(0, 8) ?: 0
+        _uiState.update { current ->
+            current.copy(
+                llantasSection = current.llantasSection.updateBirlosCount(groupId, parsed),
                 errorMessage = null,
             )
         }
@@ -436,7 +450,7 @@ private fun InspectionSectionUiState.toAnswerDrafts(): List<InspectionFlowAnswer
             ?.let { value ->
                 InspectionFlowAnswerDraft(
                     questionCode = question.id,
-                    answer = "PASS",
+                    answer = question.toNumericBackendAnswer(),
                     comment = value,
                 )
             }
@@ -468,6 +482,31 @@ internal fun sanitizeDecimalInput(value: String): String {
     }
 
     return builder.toString()
+}
+
+private fun InspectionQuestionItem.toNumericBackendAnswer(): String {
+    val numericValue = numericValue.replace(",", ".").toDoubleOrNull() ?: return "PASS"
+    val passes = when (id) {
+        "llantas_presion_delantera_izquierda",
+        "llantas_presion_delantera_derecha",
+        "llantas_presion_trasera_izquierda_1",
+        "llantas_presion_trasera_izquierda_2",
+        "llantas_presion_trasera_derecha_1",
+        "llantas_presion_trasera_derecha_2" -> numericValue >= 80.0
+
+        "llantas_profundidad_delantera_izquierda",
+        "llantas_profundidad_delantera_derecha" -> numericValue >= 3.2
+
+        "llantas_profundidad_trasera_izquierda_1",
+        "llantas_profundidad_trasera_izquierda_2",
+        "llantas_profundidad_trasera_derecha_1",
+        "llantas_profundidad_trasera_derecha_2" -> numericValue >= 1.6
+
+        "aire_frenos_tiempo_carga_psi" -> numericValue in 70.0..120.0
+        "aire_frenos_tiempo_carga_tiempo" -> numericValue < 120.0
+        else -> true
+    }
+    return if (passes) "PASS" else "FAIL"
 }
 
 data class InspectionFlowUiState(
@@ -544,6 +583,7 @@ sealed interface InspectionFlowAction {
     data class MotorEmisionesOptionSelected(val questionId: String, val optionId: String) : InspectionFlowAction
     data class OtrosOptionSelected(val questionId: String, val optionId: String) : InspectionFlowAction
     data class BirloToggled(val groupId: String, val birloIndex: Int, val checked: Boolean) : InspectionFlowAction
+    data class BirlosCountChanged(val groupId: String, val value: String) : InspectionFlowAction
     data object PreviousClicked : InspectionFlowAction
     data object CommentDialogOpened : InspectionFlowAction
     data object CommentDialogDismissed : InspectionFlowAction
@@ -608,6 +648,28 @@ private fun InspectionSectionUiState.updateBirlosGroup(
                 birlosVisualState = group.birlosVisualState.copy(
                     birlosState = birlosState,
                     evaluated = evaluated,
+                ),
+            )
+        }
+    },
+)
+
+private fun InspectionSectionUiState.updateBirlosCount(
+    groupId: String,
+    count: Int,
+): InspectionSectionUiState = copy(
+    groups = groups.map { group ->
+        if (group.id != groupId || group.birlosVisualState == null) {
+            group
+        } else {
+            val currentState = group.birlosVisualState
+            val resizedBirlosState = List(count) { index -> currentState.birlosState.getOrElse(index) { false } }
+            val resizedEvaluated = List(count) { index -> currentState.evaluated.getOrElse(index) { false } }
+            group.copy(
+                birlosVisualState = currentState.copy(
+                    count = count,
+                    birlosState = resizedBirlosState,
+                    evaluated = resizedEvaluated,
                 ),
             )
         }

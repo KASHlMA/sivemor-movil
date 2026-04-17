@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -255,11 +257,14 @@ private fun AireFrenosInspectionCard(
     modifier: Modifier = Modifier,
 ) {
     VerificationCard(modifier = modifier.testTag("aire_frenos_card_${question.id}")) {
-        Text(
-            text = question.title,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                text = question.title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            RuleStatusChip(status = question.aireFrenosRuleStatus())
+        }
         when (question.kind) {
             InspectionQuestionKind.SingleChoice -> {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -307,6 +312,49 @@ private fun AireFrenosInspectionCard(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun RuleStatusChip(
+    status: RuleStatus,
+    modifier: Modifier = Modifier,
+) {
+    val colors = when (status.tone) {
+        RuleStatusTone.Success -> AssistChipDefaults.assistChipColors(
+            containerColor = androidx.compose.ui.graphics.Color(0xFFDFF3E3),
+            labelColor = androidx.compose.ui.graphics.Color(0xFF155724),
+        )
+        RuleStatusTone.Danger -> AssistChipDefaults.assistChipColors(
+            containerColor = androidx.compose.ui.graphics.Color(0xFFFADBDD),
+            labelColor = androidx.compose.ui.graphics.Color(0xFF8A1C24),
+        )
+        RuleStatusTone.Neutral -> AssistChipDefaults.assistChipColors(
+            containerColor = androidx.compose.ui.graphics.Color(0xFFE8ECEF),
+            labelColor = androidx.compose.ui.graphics.Color(0xFF39434A),
+        )
+    }
+    AssistChip(
+        onClick = {},
+        enabled = false,
+        label = { Text(status.label) },
+        colors = colors,
+        modifier = modifier,
+    )
+}
+
+private fun InspectionQuestionItem.aireFrenosRuleStatus(): RuleStatus {
+    if (kind != InspectionQuestionKind.NumericInput || numericValue.isBlank()) {
+        return RuleStatus("Pendiente", RuleStatusTone.Neutral)
+    }
+    val numeric = numericValue.replace(",", ".").toDoubleOrNull()
+        ?: return RuleStatus("Pendiente", RuleStatusTone.Neutral)
+    return when (id) {
+        "aire_frenos_tiempo_carga_psi" ->
+            if (numeric in 70.0..120.0) RuleStatus("Cumple rango PSI", RuleStatusTone.Success) else RuleStatus("Fuera de rango PSI", RuleStatusTone.Danger)
+        "aire_frenos_tiempo_carga_tiempo" ->
+            if (numeric < 120.0) RuleStatus("Cumple tiempo", RuleStatusTone.Success) else RuleStatus("Excede tiempo", RuleStatusTone.Danger)
+        else -> RuleStatus("Capturado", RuleStatusTone.Neutral)
     }
 }
 

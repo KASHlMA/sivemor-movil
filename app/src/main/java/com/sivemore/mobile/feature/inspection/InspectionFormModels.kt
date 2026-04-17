@@ -15,13 +15,31 @@ enum class InspectionIllustrationType {
     Tuercas,
 }
 
+enum class RuleStatusTone {
+    Success,
+    Danger,
+    Neutral,
+}
+
+data class RuleStatus(
+    val label: String,
+    val tone: RuleStatusTone,
+)
+
 data class BirlosVisualState(
     val count: Int,
+    val maxCount: Int = 8,
     val birlosState: List<Boolean>,
     val evaluated: List<Boolean>,
 ) {
     val isComplete: Boolean
         get() = evaluated.size == count && evaluated.all { it }
+
+    val selectedCount: Int
+        get() = birlosState.count { it }
+
+    val missingCount: Int
+        get() = (count - selectedCount).coerceAtLeast(0)
 }
 
 data class InspectionQuestionGroup(
@@ -64,7 +82,7 @@ data class InspectionSectionUiState(
 }
 
 object InspectionSectionCatalog {
-    private const val DefaultBirlosCount = 6
+    private const val DefaultBirlosCount = 8
 
     private val generalLightOptions = listOf(
         InspectionQuestionOption(id = "APPROVED", label = "Aprobadas"),
@@ -245,14 +263,45 @@ object InspectionSectionCatalog {
                 ),
             ),
             InspectionQuestionGroup(
-                id = "llantas_birlos",
-                title = "Birlos",
+                id = "llantas_birlos_delantera_izquierda",
+                title = "Birlos delantera izquierda",
                 illustrationType = InspectionIllustrationType.Birlos,
-                birlosVisualState = BirlosVisualState(
-                    count = DefaultBirlosCount,
-                    birlosState = List(DefaultBirlosCount) { false },
-                    evaluated = List(DefaultBirlosCount) { false },
-                ),
+                birlosVisualState = defaultBirlosVisualState(),
+                questions = emptyList(),
+            ),
+            InspectionQuestionGroup(
+                id = "llantas_birlos_delantera_derecha",
+                title = "Birlos delantera derecha",
+                illustrationType = InspectionIllustrationType.Birlos,
+                birlosVisualState = defaultBirlosVisualState(),
+                questions = emptyList(),
+            ),
+            InspectionQuestionGroup(
+                id = "llantas_birlos_media_izquierda",
+                title = "Birlos media izquierda",
+                illustrationType = InspectionIllustrationType.Birlos,
+                birlosVisualState = defaultBirlosVisualState(),
+                questions = emptyList(),
+            ),
+            InspectionQuestionGroup(
+                id = "llantas_birlos_media_derecha",
+                title = "Birlos media derecha",
+                illustrationType = InspectionIllustrationType.Birlos,
+                birlosVisualState = defaultBirlosVisualState(),
+                questions = emptyList(),
+            ),
+            InspectionQuestionGroup(
+                id = "llantas_birlos_trasera_izquierda",
+                title = "Birlos trasera izquierda",
+                illustrationType = InspectionIllustrationType.Birlos,
+                birlosVisualState = defaultBirlosVisualState(),
+                questions = emptyList(),
+            ),
+            InspectionQuestionGroup(
+                id = "llantas_birlos_trasera_derecha",
+                title = "Birlos trasera derecha",
+                illustrationType = InspectionIllustrationType.Birlos,
+                birlosVisualState = defaultBirlosVisualState(),
                 questions = emptyList(),
             ),
             InspectionQuestionGroup(
@@ -401,5 +450,12 @@ object InspectionSectionCatalog {
         title = title,
         kind = InspectionQuestionKind.NumericInput,
         helperText = helperText,
+    )
+
+    private fun defaultBirlosVisualState() = BirlosVisualState(
+        count = DefaultBirlosCount,
+        maxCount = 8,
+        birlosState = List(DefaultBirlosCount) { false },
+        evaluated = List(DefaultBirlosCount) { false },
     )
 }

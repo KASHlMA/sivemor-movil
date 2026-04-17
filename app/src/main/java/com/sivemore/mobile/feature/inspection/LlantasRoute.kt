@@ -23,6 +23,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
@@ -220,11 +222,14 @@ private fun LlantasContent(
         }
         state.llantasSection.groups.forEach { group ->
             item {
-                Text(
-                    text = group.title,
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = group.title,
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    RuleStatusChip(status = group.ruleStatus())
+                }
             }
             if (group.illustrationType != null) {
                 item {
@@ -234,6 +239,9 @@ private fun LlantasContent(
                         InspectionIllustration(
                             type = group.illustrationType,
                             birlosState = group.birlosVisualState,
+                            onBirlosCountChanged = { value ->
+                                onAction(InspectionFlowAction.BirlosCountChanged(group.id, value))
+                            },
                             onBirloToggled = { index, checked ->
                                 onAction(InspectionFlowAction.BirloToggled(group.id, index, checked))
                             },
@@ -292,11 +300,14 @@ private fun LlantasInspectionCard(
     modifier: Modifier = Modifier,
 ) {
     VerificationCard(modifier = modifier.testTag("llantas_card_${question.id}")) {
-        Text(
-            text = question.title,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                text = question.title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            RuleStatusChip(status = question.ruleStatus())
+        }
         when (question.kind) {
             InspectionQuestionKind.SingleChoice -> {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -351,6 +362,7 @@ private fun LlantasInspectionCard(
 private fun InspectionIllustration(
     type: InspectionIllustrationType,
     birlosState: BirlosVisualState? = null,
+    onBirlosCountChanged: (String) -> Unit = {},
     onBirloToggled: (Int, Boolean) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
 ) {
@@ -358,6 +370,7 @@ private fun InspectionIllustration(
         InspectionIllustrationType.Birlos -> BirlosIllustration(
             modifier = modifier,
             birlosState = birlosState,
+            onBirlosCountChanged = onBirlosCountChanged,
             onBirloToggled = onBirloToggled,
         )
         InspectionIllustrationType.Tuercas -> TuercasIllustration(modifier = modifier)
@@ -367,6 +380,7 @@ private fun InspectionIllustration(
 @Composable
 private fun BirlosIllustration(
     birlosState: BirlosVisualState?,
+    onBirlosCountChanged: (String) -> Unit,
     onBirloToggled: (Int, Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -393,6 +407,17 @@ private fun BirlosIllustration(
             }
         }
         if (birlosState != null) {
+            OutlinedTextField(
+                value = birlosState.count.toString(),
+                onValueChange = onBirlosCountChanged,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                label = { Text("Cantidad de birlos") },
+                supportingText = { Text("Maximo 8 birlos") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("birlos_count_input"),
+            )
             Text(
                 text = "Verificacion de birlos",
                 style = MaterialTheme.typography.titleSmall,
@@ -409,9 +434,77 @@ private fun BirlosIllustration(
                     )
                 }
             }
+            RuleStatusChip(status = birlosState.ruleStatus())
         }
     }
 }
+
+@Composable
+private fun RuleStatusChip(
+    status: RuleStatus,
+    modifier: Modifier = Modifier,
+) {
+    val colors = when (status.tone) {
+        RuleStatusTone.Success -> AssistChipDefaults.assistChipColors(
+            containerColor = Color(0xFFDFF3E3),
+            labelColor = Color(0xFF155724),
+        )
+        RuleStatusTone.Danger -> AssistChipDefaults.assistChipColors(
+            containerColor = Color(0xFFFADBDD),
+            labelColor = Color(0xFF8A1C24),
+        )
+        RuleStatusTone.Neutral -> AssistChipDefaults.assistChipColors(
+            containerColor = Color(0xFFE8ECEF),
+            labelColor = Color(0xFF39434A),
+        )
+    }
+    AssistChip(
+        onClick = {},
+        enabled = false,
+        label = { Text(status.label) },
+        colors = colors,
+        modifier = modifier,
+    )
+}
+
+private fun InspectionQuestionItem.ruleStatus(): RuleStatus {
+    if (kind != InspectionQuestionKind.NumericInput || numericValue.isBlank()) {
+        return RuleStatus("Pendiente", RuleStatusTone.Neutral)
+    }
+    val numeric = numericValue.replace(",", ".").toDoubleOrNull()
+        ?: return RuleStatus("Pendiente", RuleStatusTone.Neutral)
+    return when (id) {
+        "llantas_presion_delantera_izquierda",
+        "llantas_presion_delantera_derecha",
+        "llantas_presion_trasera_izquierda_1",
+        "llantas_presion_trasera_izquierda_2",
+        "llantas_presion_trasera_derecha_1",
+        "llantas_presion_trasera_derecha_2" ->
+            if (numeric >= 80.0) RuleStatus("Cumple PSI", RuleStatusTone.Success) else RuleStatus("No cumple PSI", RuleStatusTone.Danger)
+
+        "llantas_profundidad_delantera_izquierda",
+        "llantas_profundidad_delantera_derecha" ->
+            if (numeric >= 3.2) RuleStatus("Cumple profundidad", RuleStatusTone.Success) else RuleStatus("No cumple profundidad", RuleStatusTone.Danger)
+
+        "llantas_profundidad_trasera_izquierda_1",
+        "llantas_profundidad_trasera_izquierda_2",
+        "llantas_profundidad_trasera_derecha_1",
+        "llantas_profundidad_trasera_derecha_2" ->
+            if (numeric >= 1.6) RuleStatus("Cumple profundidad", RuleStatusTone.Success) else RuleStatus("No cumple profundidad", RuleStatusTone.Danger)
+
+        else -> RuleStatus("Capturado", RuleStatusTone.Neutral)
+    }
+}
+
+private fun InspectionQuestionGroup.ruleStatus(): RuleStatus = birlosVisualState?.ruleStatus()
+    ?: RuleStatus("Sin criterio adicional", RuleStatusTone.Neutral)
+
+private fun BirlosVisualState.ruleStatus(): RuleStatus =
+    if (missingCount > 2) {
+        RuleStatus("Reprueba: faltan $missingCount birlos", RuleStatusTone.Danger)
+    } else {
+        RuleStatus("Cumple: faltan $missingCount birlos", RuleStatusTone.Success)
+    }
 
 @Composable
 private fun BirloIndicatorRow(
