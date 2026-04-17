@@ -280,11 +280,11 @@ fun SivemoreNavHost(
                 EvidenciasRoute(
                     viewModel = viewModel,
                     onNavigateBack = { navController.popBackStack() },
-                    onBackToLookup = {
-                        navController.popBackStack(
-                            route = AppDestination.VehicleLookup.route,
-                            inclusive = false,
-                        )
+                    onBackToMenu = {
+                        navController.navigate(AppDestination.VehicleMenu.route) {
+                            popUpTo(AppDestination.VehicleMenu.route) { inclusive = false }
+                            launchSingleTop = true
+                        }
                     },
                     onSignedOut = {
                         navController.navigate(AppDestination.Auth.route) {
@@ -340,11 +340,11 @@ fun SivemoreNavHost(
             arguments = listOf(navArgument("vehicleId") { type = NavType.StringType }),
         ) {
             SessionActionsRoute(
-                onBackToLookup = {
-                    navController.popBackStack(
-                        route = AppDestination.VehicleLookup.route,
-                        inclusive = false,
-                    )
+                onBackToMenu = {
+                    navController.navigate(AppDestination.VehicleMenu.route) {
+                        popUpTo(AppDestination.VehicleMenu.route) { inclusive = false }
+                        launchSingleTop = true
+                    }
                 },
                 onSignedOut = {
                     navController.navigate(AppDestination.Auth.route) {

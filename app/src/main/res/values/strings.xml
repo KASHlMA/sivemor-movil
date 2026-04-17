@@ -68,6 +68,9 @@
     <string name="verification_load_error">No fue posible cargar la inspeccion.</string>
     <string name="verification_update_error">No fue posible actualizar la inspeccion.</string>
     <string name="verification_submit_error">No fue posible enviar la inspeccion.</string>
+    <string name="inspection_submit_success_title">Formulario guardado</string>
+    <string name="inspection_submit_success_message">Se guardo exitosamente el formulario.</string>
+    <string name="inspection_submit_success_confirm">Aceptar</string>
 
     <string name="evidence_dialog_title">Agregar evidencia</string>
     <string name="evidence_dialog_camera">Tomar foto</string>

@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun SessionActionsRoute(
-    onBackToLookup: () -> Unit,
+    onBackToMenu: () -> Unit,
     onSignedOut: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SessionActionsViewModel = hiltViewModel(),
@@ -37,7 +37,7 @@ fun SessionActionsRoute(
     LaunchedEffect(viewModel) {
         viewModel.events.collectLatest { event ->
             when (event) {
-                SessionActionsEvent.BackToLookup -> onBackToLookup()
+                SessionActionsEvent.BackToLookup -> onBackToMenu()
                 SessionActionsEvent.SignedOut -> onSignedOut()
             }
         }
@@ -45,7 +45,7 @@ fun SessionActionsRoute(
 
     SessionActionsScreen(
         state = state,
-        onBackToLookup = onBackToLookup,
+        onBackToMenu = onBackToMenu,
         modifier = modifier,
         onAction = viewModel::onAction,
     )
@@ -54,7 +54,7 @@ fun SessionActionsRoute(
 @Composable
 fun SessionActionsScreen(
     state: SessionActionsUiState,
-    onBackToLookup: () -> Unit,
+    onBackToMenu: () -> Unit,
     onAction: (SessionActionsUiAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -71,7 +71,7 @@ fun SessionActionsScreen(
     ) {
         BrandedHeader(
             showBackButton = true,
-            onBackClick = onBackToLookup,
+            onBackClick = onBackToMenu,
         )
         VerificationCard(
             modifier = Modifier.padding(24.dp),
@@ -150,7 +150,7 @@ private fun SessionActionsPreview() {
                 isLoading = false,
                 vehicleLabel = "VUH-TQ8-453",
             ),
-            onBackToLookup = {},
+            onBackToMenu = {},
             onAction = {},
         )
     }

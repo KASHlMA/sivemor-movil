@@ -8,7 +8,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
-import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 
 class MediaUploadResolver @Inject constructor(
@@ -26,9 +25,6 @@ class MediaUploadResolver @Inject constructor(
             bytes.toRequestBody(mimeType.toMediaTypeOrNull()),
         )
     }
-
-    fun textPart(value: String): RequestBody = value.toRequestBody("text/plain".toMediaTypeOrNull())
-
     private fun resolveFileName(uri: Uri): String? {
         context.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
             val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)

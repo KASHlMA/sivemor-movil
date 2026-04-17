@@ -1,7 +1,6 @@
 package com.sivemore.mobile.data.network
 
 import okhttp3.MultipartBody
-import okhttp3.RequestBody
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -10,6 +9,7 @@ import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface MobileApiService {
     @GET("mobile/orders")
@@ -50,8 +50,8 @@ interface MobileApiService {
     suspend fun addEvidence(
         @Path("id") inspectionId: Long,
         @Part file: MultipartBody.Part,
-        @Part("sectionId") sectionId: RequestBody,
-        @Part("comment") comment: RequestBody?,
+        @Query("sectionId") sectionId: Long,
+        @Query("comment") comment: String?,
     ): InspectionDraftDto
 
     @DELETE("mobile/inspections/{id}/evidences/{evidenceId}")

@@ -150,7 +150,7 @@ class RealVerificationRepository @Inject constructor(
         return mobileApiService.addEvidence(
             inspectionId = inspectionId,
             file = mediaUploadResolver.toMultipart(upload),
-            sectionId = mediaUploadResolver.textPart(sectionId),
+            sectionId = sectionId.toLong(),
             comment = null,
         ).toDomain()
     }

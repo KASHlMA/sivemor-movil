@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -54,13 +55,14 @@ import kotlinx.coroutines.flow.collectLatest
 fun EvidenciasRoute(
     viewModel: InspectionFlowViewModel,
     onNavigateBack: () -> Unit,
-    onBackToLookup: () -> Unit,
+    onBackToMenu: () -> Unit,
     onSignedOut: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state = viewModel.uiState.collectAsStateWithLifecycle().value
     val context = LocalContext.current
     var pendingCaptureUri by remember { mutableStateOf<Uri?>(null) }
+    var showSuccessDialog by remember { mutableStateOf(false) }
 
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture(),
@@ -85,8 +87,8 @@ fun EvidenciasRoute(
         viewModel.events.collectLatest { event ->
             when (event) {
                 InspectionFlowEvent.NavigateToNextSection -> Unit
-                InspectionFlowEvent.BackToLookup -> onBackToLookup()
-                InspectionFlowEvent.Completed -> onBackToLookup()
+                InspectionFlowEvent.BackToLookup -> onBackToMenu()
+                InspectionFlowEvent.Completed -> showSuccessDialog = true
                 InspectionFlowEvent.SignedOut -> onSignedOut()
             }
         }
@@ -107,6 +109,31 @@ fun EvidenciasRoute(
         },
         modifier = modifier,
     )
+
+    if (showSuccessDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showSuccessDialog = false
+                onBackToMenu()
+            },
+            title = {
+                Text(stringResource(R.string.inspection_submit_success_title))
+            },
+            text = {
+                Text(stringResource(R.string.inspection_submit_success_message))
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showSuccessDialog = false
+                        onBackToMenu()
+                    },
+                ) {
+                    Text(stringResource(R.string.inspection_submit_success_confirm))
+                }
+            },
+        )
+    }
 }
 
 @Composable
