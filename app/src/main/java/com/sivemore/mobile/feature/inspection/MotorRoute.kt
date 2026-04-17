@@ -137,7 +137,7 @@ fun MotorScreen(
                 onAddComment = { onAction(InspectionFlowAction.CommentDialogOpened) },
                 onTakePhoto = onTakePhoto,
                 onPause = { onAction(InspectionFlowAction.PauseRequested) },
-                onFinish = { onAction(InspectionFlowAction.SubmitRequested) },
+                onFinish = null,
             )
         },
     ) { innerPadding ->

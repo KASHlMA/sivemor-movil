@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -153,7 +154,7 @@ fun LlantasScreen(
                 onAddComment = { onAction(InspectionFlowAction.CommentDialogOpened) },
                 onTakePhoto = onTakePhoto,
                 onPause = { onAction(InspectionFlowAction.PauseRequested) },
-                onFinish = { onAction(InspectionFlowAction.SubmitRequested) },
+                onFinish = null,
             )
         },
     ) { innerPadding ->
@@ -228,7 +229,9 @@ private fun LlantasContent(
                         style = MaterialTheme.typography.headlineSmall,
                         color = MaterialTheme.colorScheme.primary,
                     )
-                    RuleStatusChip(status = group.ruleStatus())
+                    group.ruleStatus()?.let { status ->
+                        RuleStatusChip(status = status)
+                    }
                 }
             }
             if (group.illustrationType != null) {
@@ -445,9 +448,9 @@ private fun BirlosIllustration(
                     Box(
                         modifier = Modifier
                             .align(Alignment.Center)
-                            .padding(
-                                start = point.offsetX.dp,
-                                top = point.offsetY.dp,
+                            .offset(
+                                x = point.offsetX.dp,
+                                y = point.offsetY.dp,
                             )
                             .size(34.dp)
                             .border(
@@ -549,8 +552,7 @@ private fun InspectionQuestionItem.ruleStatus(): RuleStatus {
     }
 }
 
-private fun InspectionQuestionGroup.ruleStatus(): RuleStatus = birlosVisualState?.ruleStatus()
-    ?: RuleStatus("Sin criterio adicional", RuleStatusTone.Neutral)
+private fun InspectionQuestionGroup.ruleStatus(): RuleStatus? = birlosVisualState?.ruleStatus()
 
 private fun BirlosVisualState.ruleStatus(): RuleStatus =
     if (missingCount > 2) {

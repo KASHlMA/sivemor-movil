@@ -25,7 +25,7 @@ fun InspectionGlobalActionsPanel(
     onAddComment: () -> Unit,
     onTakePhoto: () -> Unit,
     onPause: () -> Unit,
-    onFinish: () -> Unit,
+    onFinish: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -58,12 +58,14 @@ fun InspectionGlobalActionsPanel(
                 onClick = onPause,
                 testTag = "action_pause_verification",
             )
-            ActionIconButton(
-                iconRes = R.drawable.ic_bottom_submit,
-                label = stringResource(R.string.bottom_action_submit),
-                onClick = onFinish,
-                testTag = "action_submit_verification",
-            )
+            if (onFinish != null) {
+                ActionIconButton(
+                    iconRes = R.drawable.ic_bottom_submit,
+                    label = stringResource(R.string.bottom_action_submit),
+                    onClick = onFinish,
+                    testTag = "action_submit_verification",
+                )
+            }
         }
     }
 }

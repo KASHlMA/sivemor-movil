@@ -230,12 +230,12 @@ fun EvidenciasScreen(
         )
     }
 
-    if (selectedEvidence != null) {
+    selectedEvidence?.let { evidence ->
         EvidencePreviewDialog(
-            evidence = selectedEvidence!!,
+            evidence = evidence,
             onDismiss = { selectedEvidence = null },
             onDelete = {
-                onAction(InspectionFlowAction.RemoveEvidence(selectedEvidence!!.id))
+                onAction(InspectionFlowAction.RemoveEvidence(evidence.id))
                 selectedEvidence = null
             },
         )
