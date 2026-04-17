@@ -11,7 +11,7 @@ class MobileErrorMapper @Inject constructor() {
     fun toMessage(throwable: Throwable): String = when (throwable) {
         is SocketTimeoutException -> "La conexion tardo demasiado. Intenta nuevamente."
         is SSLException -> "La conexion segura fallo. Revisa la URL o el certificado local."
-        is IOException -> "No fue posible conectar con el backend."
+        is IOException -> "No fue posible conectar con el sistema."
         is HttpException -> when (throwable.code()) {
             400 -> throwable.extractBackendMessage() ?: "La solicitud no es valida."
             401 -> throwable.extractBackendMessage() ?: "La sesion expiro. Inicia sesion nuevamente."

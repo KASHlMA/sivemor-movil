@@ -13,7 +13,7 @@
     <string name="auth_show_password">Mostrar contrasena</string>
     <string name="auth_hide_password">Ocultar contrasena</string>
     <string name="auth_primary_cta">Iniciar sesion</string>
-    <string name="auth_helper">Usa tu usuario tecnico asignado para conectarte al backend.</string>
+    <string name="auth_helper">Usa tu usuario tecnico asignado para ingresar al sistema.</string>
 
     <string name="search_label">Buscar</string>
     <string name="search_placeholder">Numero de vehiculo, placas o numero de serie</string>
@@ -67,7 +67,7 @@
     <string name="inspection_comment_cancel">Cancelar</string>
     <string name="inspection_comment_saved">Comentario actual: %1$s</string>
     <string name="verification_submit_title">Finalizar inspeccion</string>
-    <string name="verification_submit_message">Se enviara el borrador actual al backend y desaparecera de tus pedidos activos.</string>
+    <string name="verification_submit_message">Se enviara el borrador actual al sistema y desaparecera de tus pedidos activos.</string>
     <string name="verification_submit_action">Finalizar</string>
     <string name="verification_load_error">No fue posible cargar la inspeccion.</string>
     <string name="verification_update_error">No fue posible actualizar la inspeccion.</string>
