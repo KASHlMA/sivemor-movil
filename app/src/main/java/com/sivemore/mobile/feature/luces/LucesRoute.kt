@@ -56,6 +56,7 @@ fun LucesRoute(
     onNavigateNext: () -> Unit,
     onNavigateBack: () -> Unit,
     onBackToLookup: () -> Unit,
+    onBackToMenu: () -> Unit,
     onSignedOut: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -87,6 +88,7 @@ fun LucesRoute(
             when (event) {
                 InspectionFlowEvent.NavigateToNextSection -> onNavigateNext()
                 InspectionFlowEvent.BackToLookup -> onBackToLookup()
+                InspectionFlowEvent.BackToMenu -> onBackToMenu()
                 InspectionFlowEvent.Completed -> onBackToLookup()
                 InspectionFlowEvent.SignedOut -> onSignedOut()
             }

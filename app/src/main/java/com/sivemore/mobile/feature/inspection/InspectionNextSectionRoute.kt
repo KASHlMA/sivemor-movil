@@ -41,6 +41,7 @@ import kotlinx.coroutines.flow.collectLatest
 fun InspectionNextSectionRoute(
     viewModel: InspectionFlowViewModel,
     onBackToLookup: () -> Unit,
+    onBackToMenu: () -> Unit,
     onSignedOut: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -71,6 +72,7 @@ fun InspectionNextSectionRoute(
         viewModel.events.collectLatest { event ->
             when (event) {
                 InspectionFlowEvent.BackToLookup -> onBackToLookup()
+                InspectionFlowEvent.BackToMenu -> onBackToMenu()
                 InspectionFlowEvent.Completed -> onBackToLookup()
                 InspectionFlowEvent.SignedOut -> onSignedOut()
                 InspectionFlowEvent.NavigateToNextSection -> Unit

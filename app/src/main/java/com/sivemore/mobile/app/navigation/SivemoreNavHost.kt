@@ -139,6 +139,12 @@ fun SivemoreNavHost(
                             inclusive = false,
                         )
                     },
+                    onBackToMenu = {
+                        navController.navigate(AppDestination.VehicleMenu.route) {
+                            popUpTo(AppDestination.VehicleMenu.route) { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    },
                     onSignedOut = {
                         navController.navigate(AppDestination.Auth.route) {
                             popUpTo(navController.graph.id) { inclusive = true }
@@ -163,6 +169,12 @@ fun SivemoreNavHost(
                             route = AppDestination.VehicleLookup.route,
                             inclusive = false,
                         )
+                    },
+                    onBackToMenu = {
+                        navController.navigate(AppDestination.VehicleMenu.route) {
+                            popUpTo(AppDestination.VehicleMenu.route) { inclusive = false }
+                            launchSingleTop = true
+                        }
                     },
                     onSignedOut = {
                         navController.navigate(AppDestination.Auth.route) {
@@ -189,6 +201,12 @@ fun SivemoreNavHost(
                             inclusive = false,
                         )
                     },
+                    onBackToMenu = {
+                        navController.navigate(AppDestination.VehicleMenu.route) {
+                            popUpTo(AppDestination.VehicleMenu.route) { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    },
                     onSignedOut = {
                         navController.navigate(AppDestination.Auth.route) {
                             popUpTo(navController.graph.id) { inclusive = true }
@@ -213,6 +231,12 @@ fun SivemoreNavHost(
                             route = AppDestination.VehicleLookup.route,
                             inclusive = false,
                         )
+                    },
+                    onBackToMenu = {
+                        navController.navigate(AppDestination.VehicleMenu.route) {
+                            popUpTo(AppDestination.VehicleMenu.route) { inclusive = false }
+                            launchSingleTop = true
+                        }
                     },
                     onSignedOut = {
                         navController.navigate(AppDestination.Auth.route) {
@@ -239,6 +263,12 @@ fun SivemoreNavHost(
                             inclusive = false,
                         )
                     },
+                    onBackToMenu = {
+                        navController.navigate(AppDestination.VehicleMenu.route) {
+                            popUpTo(AppDestination.VehicleMenu.route) { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    },
                     onSignedOut = {
                         navController.navigate(AppDestination.Auth.route) {
                             popUpTo(navController.graph.id) { inclusive = true }
@@ -263,6 +293,12 @@ fun SivemoreNavHost(
                             route = AppDestination.VehicleLookup.route,
                             inclusive = false,
                         )
+                    },
+                    onBackToMenu = {
+                        navController.navigate(AppDestination.VehicleMenu.route) {
+                            popUpTo(AppDestination.VehicleMenu.route) { inclusive = false }
+                            launchSingleTop = true
+                        }
                     },
                     onSignedOut = {
                         navController.navigate(AppDestination.Auth.route) {
@@ -307,6 +343,12 @@ fun SivemoreNavHost(
                             inclusive = false,
                         )
                     },
+                    onBackToMenu = {
+                        navController.navigate(AppDestination.VehicleMenu.route) {
+                            popUpTo(AppDestination.VehicleMenu.route) { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    },
                     onSignedOut = {
                         navController.navigate(AppDestination.Auth.route) {
                             popUpTo(navController.graph.id) { inclusive = true }
@@ -326,6 +368,12 @@ fun SivemoreNavHost(
                         route = AppDestination.VehicleLookup.route,
                         inclusive = false,
                     )
+                },
+                onBackToMenu = {
+                    navController.navigate(AppDestination.VehicleMenu.route) {
+                        popUpTo(AppDestination.VehicleMenu.route) { inclusive = false }
+                        launchSingleTop = true
+                    }
                 },
                 onSignedOut = {
                     navController.navigate(AppDestination.Auth.route) {

@@ -60,5 +60,6 @@ data class VerificationUiState(
 sealed interface VerificationEvent {
     data object Completed : VerificationEvent
     data object BackToLookup : VerificationEvent
+    data object BackToMenu : VerificationEvent
     data object SignedOut : VerificationEvent
 }

@@ -167,7 +167,7 @@ class VerificationViewModel @Inject constructor(
                 verificationRepository.pauseSession(orderUnitId)
             }.onSuccess {
                 _uiState.update { it.copy(showPauseDialog = false) }
-                _events.emit(VerificationEvent.BackToLookup)
+                _events.emit(VerificationEvent.BackToMenu)
             }.onFailure { failure ->
                 _uiState.update {
                     it.copy(

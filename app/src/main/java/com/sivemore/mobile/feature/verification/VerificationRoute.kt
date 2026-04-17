@@ -59,6 +59,7 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun VerificationRoute(
     onBackToLookup: () -> Unit,
+    onBackToMenu: () -> Unit,
     onSignedOut: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: VerificationViewModel = hiltViewModel(),
@@ -89,6 +90,7 @@ fun VerificationRoute(
         viewModel.events.collectLatest { event ->
             when (event) {
                 VerificationEvent.BackToLookup -> onBackToLookup()
+                VerificationEvent.BackToMenu -> onBackToMenu()
                 VerificationEvent.Completed -> onBackToLookup()
                 VerificationEvent.SignedOut -> onSignedOut()
             }

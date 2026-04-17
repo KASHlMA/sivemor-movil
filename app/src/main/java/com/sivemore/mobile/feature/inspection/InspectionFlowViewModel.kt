@@ -302,7 +302,7 @@ class InspectionFlowViewModel @Inject constructor(
                 verificationRepository.pauseSession(vehicleId)
             }.onSuccess {
                 _uiState.update { it.copy(showPauseDialog = false, isSavingComment = false) }
-                _events.emit(InspectionFlowEvent.BackToLookup)
+                _events.emit(InspectionFlowEvent.BackToMenu)
             }.onFailure { failure ->
                 _uiState.update {
                     it.copy(
@@ -563,6 +563,7 @@ sealed interface InspectionFlowAction {
 sealed interface InspectionFlowEvent {
     data object NavigateToNextSection : InspectionFlowEvent
     data object BackToLookup : InspectionFlowEvent
+    data object BackToMenu : InspectionFlowEvent
     data object Completed : InspectionFlowEvent
     data object SignedOut : InspectionFlowEvent
 }

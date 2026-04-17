@@ -74,7 +74,7 @@ class VerificationViewModelTest {
     }
 
     @Test
-    fun pauseConfirmationEmitsBackToLookup() = runTest {
+    fun pauseConfirmationEmitsBackToMenu() = runTest {
         val viewModel = buildViewModel()
         advanceUntilIdle()
         val event = async { viewModel.events.first() }
@@ -85,7 +85,7 @@ class VerificationViewModelTest {
         viewModel.onAction(VerificationUiAction.PauseConfirmed)
         advanceUntilIdle()
 
-        assertEquals(VerificationEvent.BackToLookup, event.await())
+        assertEquals(VerificationEvent.BackToMenu, event.await())
     }
 
     @Test

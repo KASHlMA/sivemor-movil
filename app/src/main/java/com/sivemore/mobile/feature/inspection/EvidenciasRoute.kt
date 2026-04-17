@@ -89,6 +89,7 @@ fun EvidenciasRoute(
             when (event) {
                 InspectionFlowEvent.NavigateToNextSection -> Unit
                 InspectionFlowEvent.BackToLookup -> onBackToMenu()
+                InspectionFlowEvent.BackToMenu -> onBackToMenu()
                 InspectionFlowEvent.Completed -> showSuccessDialog = true
                 InspectionFlowEvent.SignedOut -> onSignedOut()
             }

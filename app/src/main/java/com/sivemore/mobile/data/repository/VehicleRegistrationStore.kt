@@ -31,11 +31,19 @@ class VehicleRegistrationStore @Inject constructor() {
     }
 
     suspend fun loadVehicles(): List<VehicleSummary> = mutex.withLock {
-        vehicles.values.map { it.toSummary(admissionDate = todayLabel()) }
+        vehicles.values.map { vehicle ->
+            vehicle.toSummary(
+                admissionDate = todayLabel(),
+                sessionStatus = sessions[vehicle.id]?.status,
+            )
+        }
     }
 
     suspend fun loadVehicle(vehicleId: String): VehicleSummary? = mutex.withLock {
-        vehicles[vehicleId]?.toSummary(admissionDate = todayLabel())
+        vehicles[vehicleId]?.toSummary(
+            admissionDate = todayLabel(),
+            sessionStatus = sessions[vehicleId]?.status,
+        )
     }
 
     suspend fun loadEditableVehicle(vehicleId: String): Vehicle? = mutex.withLock {
@@ -133,16 +141,23 @@ class VehicleRegistrationStore @Inject constructor() {
     private fun nowLabel(): String = LocalDateTime.now().format(dateTimeFormatter)
 }
 
-private fun Vehicle.toSummary(admissionDate: String): VehicleSummary = VehicleSummary(
+private fun Vehicle.toSummary(
+    admissionDate: String,
+    sessionStatus: VerificationSessionStatus?,
+): VehicleSummary = VehicleSummary(
     id = id,
     editableVehicleId = id,
     plates = placas,
     serialNumber = vin,
     vehicleNumber = numeroEconomico,
-    status = VehicleStatus.Assigned,
+    status = when (sessionStatus) {
+        VerificationSessionStatus.Paused -> VehicleStatus.Paused
+        VerificationSessionStatus.InProgress -> VehicleStatus.InProgress
+        else -> VehicleStatus.Assigned
+    },
     admissionDate = admissionDate,
     completedDate = null,
-    hasPendingVerification = false,
+    hasPendingVerification = sessionStatus == VerificationSessionStatus.Paused,
     draftInspectionId = null,
 )
 

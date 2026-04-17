@@ -54,6 +54,7 @@ fun DireccionRoute(
     onNavigateBack: () -> Unit,
     onNavigateNext: () -> Unit,
     onBackToLookup: () -> Unit,
+    onBackToMenu: () -> Unit,
     onSignedOut: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -85,6 +86,7 @@ fun DireccionRoute(
             when (event) {
                 InspectionFlowEvent.NavigateToNextSection -> onNavigateNext()
                 InspectionFlowEvent.BackToLookup -> onBackToLookup()
+                InspectionFlowEvent.BackToMenu -> onBackToMenu()
                 InspectionFlowEvent.Completed -> onBackToLookup()
                 InspectionFlowEvent.SignedOut -> onSignedOut()
             }
