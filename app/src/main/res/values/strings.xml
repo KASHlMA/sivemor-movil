@@ -4,6 +4,7 @@
     <string name="brand_name">SIVEMOR</string>
     <string name="brand_subtitle">Sistema de Verificacion de Morelos</string>
     <string name="header_back">Regresar</string>
+    <string name="header_action_sign_out">Cerrar sesion</string>
 
     <string name="auth_title">Iniciar sesion</string>
     <string name="auth_subtitle">Sistema de Verificacion de Morelos</string>
@@ -20,6 +21,9 @@
     <string name="vehicle_menu_title">Menu</string>
     <string name="vehicle_menu_visualization">Visualizacion de vehiculos</string>
     <string name="vehicle_menu_registration">Registrar vehiculo</string>
+    <string name="menu_sign_out_title">Cerrar sesion</string>
+    <string name="menu_sign_out_message">Estas seguro de cerrar sesion?</string>
+    <string name="menu_sign_out_confirm">Salir</string>
 
     <string name="vehicle_search_title">Visualizacion de vehiculos</string>
     <string name="vehicle_search_description">Consulta los vehiculos asignados al tecnico y abre la verificacion correspondiente.</string>

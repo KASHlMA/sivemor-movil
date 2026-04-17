@@ -3,6 +3,7 @@ package com.sivemore.mobile
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import com.sivemore.mobile.app.designsystem.SivemoreTheme
@@ -55,10 +56,29 @@ class VehicleMenuScreenTest {
             listOf(
                 VehicleMenuUiAction.OpenVisualization,
                 VehicleMenuUiAction.OpenRegistration,
-                VehicleMenuUiAction.SignOut,
+                VehicleMenuUiAction.SignOutTapped,
             ),
             actions,
         )
+    }
+
+    @Test
+    fun vehicleMenuShowsSignOutConfirmationDialog() {
+        val actions = mutableListOf<VehicleMenuUiAction>()
+
+        composeRule.setContent {
+            SivemoreTheme {
+                VehicleMenuScreen(
+                    state = VehicleMenuUiState(showSignOutDialog = true),
+                    onAction = { actions += it },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Estas seguro de cerrar sesion?").assertIsDisplayed()
+        composeRule.onNodeWithText("Salir").performClick()
+
+        assertEquals(listOf(VehicleMenuUiAction.SignOutConfirmed), actions)
     }
 
     @Test

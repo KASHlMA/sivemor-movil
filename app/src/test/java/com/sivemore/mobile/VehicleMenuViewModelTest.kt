@@ -45,17 +45,32 @@ class VehicleMenuViewModelTest {
     }
 
     @Test
-    fun signOutCallsRepositoryAndEmitsSignedOut() = runTest {
+    fun signOutRequiresConfirmationBeforeCallingRepository() = runTest {
+        val repository = RecordingAuthRepository()
+        val viewModel = VehicleMenuViewModel(authRepository = repository)
+
+        viewModel.onAction(VehicleMenuUiAction.SignOutTapped)
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.showSignOutDialog)
+        assertFalse(repository.signOutCalled)
+    }
+
+    @Test
+    fun confirmedSignOutCallsRepositoryAndEmitsSignedOut() = runTest {
         val repository = RecordingAuthRepository()
         val viewModel = VehicleMenuViewModel(authRepository = repository)
         val event = async { viewModel.events.first() }
 
-        viewModel.onAction(VehicleMenuUiAction.SignOut)
+        viewModel.onAction(VehicleMenuUiAction.SignOutTapped)
+        advanceUntilIdle()
+        viewModel.onAction(VehicleMenuUiAction.SignOutConfirmed)
         advanceUntilIdle()
 
         assertTrue(repository.signOutCalled)
         assertEquals(VehicleMenuEvent.SignedOut, event.await())
         assertFalse(viewModel.uiState.value.isSigningOut)
+        assertFalse(viewModel.uiState.value.showSignOutDialog)
     }
 
     private class RecordingAuthRepository : AuthRepository {

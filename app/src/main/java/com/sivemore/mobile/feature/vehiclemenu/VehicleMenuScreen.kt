@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -20,10 +21,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sivemore.mobile.R
 import com.sivemore.mobile.app.designsystem.BrandedHeader
+import com.sivemore.mobile.app.designsystem.ConfirmationDialog
 import com.sivemore.mobile.app.designsystem.LoginFooterDecoration
 import com.sivemore.mobile.app.designsystem.SivemorePrimaryButton
 import com.sivemore.mobile.app.designsystem.SivemoreTheme
@@ -73,9 +76,12 @@ fun VehicleMenuScreen(
             .testTag("vehicle_menu_screen"),
     ) {
         BrandedHeader(
-            modifier = Modifier.align(Alignment.TopCenter),
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .systemBarsPadding()
+                .zIndex(1f),
             showAction = true,
-            onActionClick = { onAction(VehicleMenuUiAction.SignOut) },
+            onActionClick = { onAction(VehicleMenuUiAction.SignOutTapped) },
         )
 
         Column(
@@ -123,6 +129,16 @@ fun VehicleMenuScreen(
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
                 .height(144.dp),
+        )
+    }
+
+    if (state.showSignOutDialog) {
+        ConfirmationDialog(
+            title = stringResource(R.string.menu_sign_out_title),
+            text = stringResource(R.string.menu_sign_out_message),
+            confirmLabel = stringResource(R.string.menu_sign_out_confirm),
+            onConfirm = { onAction(VehicleMenuUiAction.SignOutConfirmed) },
+            onDismiss = { onAction(VehicleMenuUiAction.SignOutDismissed) },
         )
     }
 }

@@ -62,6 +62,7 @@ fun EvidenciasRoute(
     val state = viewModel.uiState.collectAsStateWithLifecycle().value
     val context = LocalContext.current
     var pendingCaptureUri by remember { mutableStateOf<Uri?>(null) }
+    var showSubmitConfirmation by remember { mutableStateOf(false) }
     var showSuccessDialog by remember { mutableStateOf(false) }
 
     val cameraLauncher = rememberLauncherForActivityResult(
@@ -107,8 +108,36 @@ fun EvidenciasRoute(
                 viewModel.onAction(InspectionFlowAction.PhotoLimitReached)
             }
         },
+        onRequestSubmit = { showSubmitConfirmation = true },
         modifier = modifier,
     )
+
+    if (showSubmitConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showSubmitConfirmation = false },
+            title = {
+                Text(stringResource(R.string.verification_submit_title))
+            },
+            text = {
+                Text(stringResource(R.string.verification_submit_message))
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showSubmitConfirmation = false
+                        viewModel.onAction(InspectionFlowAction.SubmitRequested)
+                    },
+                ) {
+                    Text(stringResource(R.string.verification_submit_action))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showSubmitConfirmation = false }) {
+                    Text(stringResource(R.string.dialog_cancel))
+                }
+            },
+        )
+    }
 
     if (showSuccessDialog) {
         AlertDialog(
@@ -142,6 +171,7 @@ fun EvidenciasScreen(
     onAction: (InspectionFlowAction) -> Unit,
     onBack: () -> Unit,
     onTakePhoto: () -> Unit,
+    onRequestSubmit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     if (state.isLoading) {
@@ -168,7 +198,7 @@ fun EvidenciasScreen(
                 onAddComment = { onAction(InspectionFlowAction.CommentDialogOpened) },
                 onTakePhoto = onTakePhoto,
                 onPause = { onAction(InspectionFlowAction.PauseRequested) },
-                onFinish = { onAction(InspectionFlowAction.SubmitRequested) },
+                onFinish = onRequestSubmit,
             )
         },
     ) { innerPadding ->
@@ -176,6 +206,7 @@ fun EvidenciasScreen(
             state = state,
             onAction = onAction,
             onBack = onBack,
+            onRequestSubmit = onRequestSubmit,
             innerPadding = innerPadding,
             onEvidenceSelected = { selectedEvidence = it },
         )
@@ -215,6 +246,7 @@ private fun EvidenciasContent(
     state: InspectionFlowUiState,
     onAction: (InspectionFlowAction) -> Unit,
     onBack: () -> Unit,
+    onRequestSubmit: () -> Unit,
     innerPadding: PaddingValues,
     onEvidenceSelected: (EvidenceItem) -> Unit,
 ) {
@@ -294,7 +326,7 @@ private fun EvidenciasContent(
                     Text("Atrás")
                 }
                 Button(
-                    onClick = { onAction(InspectionFlowAction.SubmitRequested) },
+                    onClick = onRequestSubmit,
                     modifier = Modifier
                         .weight(1f)
                         .testTag("evidencias_submit_button"),
@@ -478,6 +510,7 @@ private fun EvidenciasScreenPreview() {
             onAction = {},
             onBack = {},
             onTakePhoto = {},
+            onRequestSubmit = {},
         )
     }
 }

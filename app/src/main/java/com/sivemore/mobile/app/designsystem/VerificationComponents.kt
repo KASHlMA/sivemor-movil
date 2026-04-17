@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -206,19 +207,23 @@ fun HeaderActionButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(
+    Surface(
         modifier = modifier
-            .size(width = 40.dp, height = 38.dp)
-            .background(color = BrandGreenDeep, shape = RoundedCornerShape(5.dp))
-            .clickable(onClick = onClick)
+            .size(48.dp)
             .testTag("header_action"),
-        contentAlignment = Alignment.Center,
+        color = BrandGreenDeep,
+        shape = RoundedCornerShape(8.dp),
     ) {
-        Icon(
-            painter = painterResource(R.drawable.ic_header_action),
-            contentDescription = null,
-            tint = Snow,
-        )
+        IconButton(
+            onClick = onClick,
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_header_action),
+                contentDescription = stringResource(R.string.header_action_sign_out),
+                tint = Snow,
+            )
+        }
     }
 }
 

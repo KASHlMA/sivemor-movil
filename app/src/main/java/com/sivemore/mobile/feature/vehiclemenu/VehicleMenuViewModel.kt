@@ -28,7 +28,9 @@ class VehicleMenuViewModel @Inject constructor(
         when (action) {
             VehicleMenuUiAction.OpenRegistration -> emitEvent(VehicleMenuEvent.OpenRegistration)
             VehicleMenuUiAction.OpenVisualization -> emitEvent(VehicleMenuEvent.OpenVisualization)
-            VehicleMenuUiAction.SignOut -> signOut()
+            VehicleMenuUiAction.SignOutTapped -> _uiState.update { it.copy(showSignOutDialog = true) }
+            VehicleMenuUiAction.SignOutDismissed -> _uiState.update { it.copy(showSignOutDialog = false) }
+            VehicleMenuUiAction.SignOutConfirmed -> signOut()
         }
     }
 
@@ -40,7 +42,7 @@ class VehicleMenuViewModel @Inject constructor(
 
     private fun signOut() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isSigningOut = true) }
+            _uiState.update { it.copy(isSigningOut = true, showSignOutDialog = false) }
             runCatching { authRepository.signOut() }
             _uiState.update { it.copy(isSigningOut = false) }
             _events.emit(VehicleMenuEvent.SignedOut)

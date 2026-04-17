@@ -2,6 +2,7 @@ package com.sivemore.mobile.feature.vehiclemenu
 
 data class VehicleMenuUiState(
     val isSigningOut: Boolean = false,
+    val showSignOutDialog: Boolean = false,
 )
 
 sealed interface VehicleMenuEvent {
@@ -13,5 +14,7 @@ sealed interface VehicleMenuEvent {
 sealed interface VehicleMenuUiAction {
     data object OpenVisualization : VehicleMenuUiAction
     data object OpenRegistration : VehicleMenuUiAction
-    data object SignOut : VehicleMenuUiAction
+    data object SignOutTapped : VehicleMenuUiAction
+    data object SignOutDismissed : VehicleMenuUiAction
+    data object SignOutConfirmed : VehicleMenuUiAction
 }
