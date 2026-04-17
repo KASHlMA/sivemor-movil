@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,12 +22,10 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -48,6 +47,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -424,16 +424,69 @@ private fun BirlosIllustration(
                 color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold,
             )
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                repeat(birlosState.count) { index ->
-                    BirloIndicatorRow(
-                        index = index,
-                        checked = birlosState.birlosState.getOrElse(index) { false },
-                        evaluated = birlosState.evaluated.getOrElse(index) { false },
-                        onCheckedChange = { checked -> onBirloToggled(index, checked) },
-                    )
+            Text(
+                text = "Toca cada birlo presente directamente sobre la llanta.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(240.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Canvas(modifier = Modifier.size(190.dp)) {
+                    drawCircle(color = Color(0xFF1E1E1E))
+                    drawCircle(color = Color(0xFF5E5E5E), radius = size.minDimension * 0.35f)
+                    drawCircle(color = Color(0xFFD8D8D8), radius = size.minDimension * 0.14f)
+                }
+                buildWheelPoints(birlosState.count.coerceAtLeast(1)).forEach { point ->
+                    val isSelected = birlosState.birlosState.getOrElse(point.index - 1) { false }
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(
+                                start = point.offsetX.dp,
+                                top = point.offsetY.dp,
+                            )
+                            .size(34.dp)
+                            .border(
+                                width = 2.dp,
+                                color = if (isSelected) Color(0xFF1FA463) else Color(0xFFB0B7BF),
+                                shape = MaterialTheme.shapes.small,
+                            )
+                            .background(
+                                color = if (isSelected) Color(0xFFDFF3E3) else Color.White,
+                                shape = MaterialTheme.shapes.small,
+                            )
+                            .clickable(enabled = birlosState.count > 0) {
+                                onBirloToggled(point.index - 1, !isSelected)
+                            }
+                            .testTag("birlo_indicator_${point.index}"),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = point.index.toString(),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = if (isSelected) Color(0xFF155724) else MaterialTheme.colorScheme.onSurface,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
                 }
             }
+            Text(
+                text = if (birlosState.selectedCount > 0) {
+                    "Birlos marcados: ${
+                        birlosState.birlosState.mapIndexedNotNull { index, checked ->
+                            if (checked) index + 1 else null
+                        }.joinToString(", ")
+                    }"
+                } else {
+                    "Sin birlos marcados."
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
             RuleStatusChip(status = birlosState.ruleStatus())
         }
     }
@@ -506,49 +559,20 @@ private fun BirlosVisualState.ruleStatus(): RuleStatus =
         RuleStatus("Cumple: faltan $missingCount birlos", RuleStatusTone.Success)
     }
 
-@Composable
-private fun BirloIndicatorRow(
-    index: Int,
-    checked: Boolean,
-    evaluated: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .toggleable(
-                value = checked,
-                onValueChange = onCheckedChange,
-            )
-            .padding(vertical = 2.dp)
-            .testTag("birlo_indicator_${index + 1}"),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Box(
-            modifier = Modifier
-                .width(22.dp)
-                .height(6.dp)
-                .background(
-                    color = when {
-                        !evaluated -> Color(0xFFBDBDBD)
-                        checked -> Color(0xFF1FA463)
-                        else -> Color(0xFFD14B4B)
-                    },
-                ),
-        )
-        Text(
-            text = "Birlo ${index + 1}",
-            modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Checkbox(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-        )
-    }
+private data class WheelPoint(
+    val index: Int,
+    val offsetX: Int,
+    val offsetY: Int,
+)
+
+private fun buildWheelPoints(count: Int): List<WheelPoint> = List(count) { index ->
+    val angle = (Math.PI * 2 * index / count) - (Math.PI / 2)
+    val radius = 72.0
+    WheelPoint(
+        index = index + 1,
+        offsetX = (kotlin.math.cos(angle) * radius).toInt(),
+        offsetY = (kotlin.math.sin(angle) * radius).toInt(),
+    )
 }
 
 @Composable
