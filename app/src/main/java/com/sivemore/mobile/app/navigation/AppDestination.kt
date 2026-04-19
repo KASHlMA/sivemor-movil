@@ -33,6 +33,8 @@ sealed class AppDestination(
         fun createRoute(vehicleId: String): String = "session_actions/$vehicleId"
     }
 
+    data object Reports : AppDestination(route = "reports")
+
     companion object {
         fun fromRoute(route: String?): AppDestination? = when {
             route == Auth.route -> Auth
@@ -50,6 +52,7 @@ sealed class AppDestination(
             route == InspectionNextSection.route -> InspectionNextSection
             route == Verification.route -> Verification
             route == SessionActions.route -> SessionActions
+            route == Reports.route -> Reports
             else -> null
         }
     }

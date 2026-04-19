@@ -533,7 +533,7 @@ data class InspectionFlowUiState(
         get() = currentSection?.evidence?.size ?: 0
 
     val canAddMorePhotos: Boolean
-        get() = currentEvidenceCount < 3
+        get() = totalEvidenceCount < 3
 
     val allEvidence: List<com.sivemore.mobile.domain.model.EvidenceItem>
         get() = session?.sections.orEmpty().flatMap { it.evidence }

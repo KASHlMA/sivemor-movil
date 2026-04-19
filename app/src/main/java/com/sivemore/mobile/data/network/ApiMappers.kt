@@ -1,10 +1,12 @@
 package com.sivemore.mobile.data.network
 
 import com.sivemore.mobile.domain.model.AuthenticatedUser
+import com.sivemore.mobile.domain.model.CompletedReport
 import com.sivemore.mobile.domain.model.EvidenceItem
 import com.sivemore.mobile.domain.model.InspectionItem
 import com.sivemore.mobile.domain.model.InspectionOption
 import com.sivemore.mobile.domain.model.InspectionSection
+import com.sivemore.mobile.domain.model.ReportVerdict
 import com.sivemore.mobile.domain.model.VerificationSession
 import com.sivemore.mobile.domain.model.VerificationSessionStatus
 import com.sivemore.mobile.domain.model.Vehicle
@@ -113,6 +115,38 @@ fun InspectionDraftDto.toDomain(): VerificationSession = VerificationSession(
     updatedAtLabel = updatedAt.toDisplayDateTime(),
     evidenceCount = evidenceCount,
 )
+
+fun InspectionHistoryDto.toDomain(): CompletedReport {
+    val computedVerdict = when {
+        verdict != null -> when (verdict.uppercase()) {
+            "APPROVED", "PASS" -> ReportVerdict.Approved
+            "REJECTED", "FAIL" -> ReportVerdict.Rejected
+            else -> ReportVerdict.Pending
+        }
+        else -> {
+            val allAnswers = sections.flatMap { it.answers }
+            val requiredQuestionIds = sections.flatMap { section ->
+                section.questions.filter { it.required }.map { it.id }
+            }.toSet()
+            val anyRequiredFailed = allAnswers.any { it.questionId in requiredQuestionIds && it.answer == "FAIL" }
+            val allRequiredAnswered = requiredQuestionIds.all { qId -> allAnswers.any { it.questionId == qId } }
+            when {
+                !allRequiredAnswered -> ReportVerdict.Pending
+                anyRequiredFailed -> ReportVerdict.Rejected
+                else -> ReportVerdict.Approved
+            }
+        }
+    }
+    return CompletedReport(
+        id = id.toString(),
+        orderNumber = orderNumber,
+        vehiclePlate = vehiclePlate,
+        clientCompanyName = clientCompanyName,
+        submittedAtLabel = submittedAt.toDisplayDateTime(),
+        verdict = computedVerdict,
+        comments = overallComment.orEmpty(),
+    )
+}
 
 private fun String.toDisplayDateTime(): String = runCatching {
     Instant.parse(this)

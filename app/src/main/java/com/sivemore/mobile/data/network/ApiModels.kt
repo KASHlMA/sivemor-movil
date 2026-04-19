@@ -148,3 +148,14 @@ data class UpdateInspectionRequestDto(
     val overallComment: String? = null,
     val sections: List<SectionUpdateDto> = emptyList(),
 )
+
+data class InspectionHistoryDto(
+    val id: Long,
+    val orderNumber: String,
+    val vehiclePlate: String,
+    val clientCompanyName: String,
+    val submittedAt: String,
+    val overallComment: String?,
+    val verdict: String?,
+    val sections: List<InspectionSectionDraftDto>,
+)

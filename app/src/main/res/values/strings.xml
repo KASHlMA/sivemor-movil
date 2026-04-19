@@ -21,6 +21,13 @@
     <string name="vehicle_menu_title">Menu</string>
     <string name="vehicle_menu_visualization">Visualizacion de vehiculos</string>
     <string name="vehicle_menu_registration">Registrar vehiculo</string>
+    <string name="vehicle_menu_reports">Mis reportes</string>
+
+    <string name="reports_title">Mis reportes</string>
+    <string name="reports_description">Verificaciones completadas y su veredicto final.</string>
+    <string name="reports_empty_title">Sin reportes</string>
+    <string name="reports_empty_description">Aun no has completado ninguna verificacion.</string>
+    <string name="reports_submitted_at">Enviado: %1$s</string>
     <string name="menu_sign_out_title">Cerrar sesion</string>
     <string name="menu_sign_out_message">Estas seguro de cerrar sesion?</string>
     <string name="menu_sign_out_confirm">Salir</string>

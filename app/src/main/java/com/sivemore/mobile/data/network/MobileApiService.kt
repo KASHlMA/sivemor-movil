@@ -68,4 +68,7 @@ interface MobileApiService {
 
     @POST("mobile/inspections/{id}/submit")
     suspend fun submitInspection(@Path("id") inspectionId: Long)
+
+    @GET("mobile/inspections/history")
+    suspend fun listCompletedInspections(): List<InspectionHistoryDto>
 }

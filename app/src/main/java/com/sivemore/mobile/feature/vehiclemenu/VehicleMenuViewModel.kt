@@ -28,6 +28,7 @@ class VehicleMenuViewModel @Inject constructor(
         when (action) {
             VehicleMenuUiAction.OpenRegistration -> emitEvent(VehicleMenuEvent.OpenRegistration)
             VehicleMenuUiAction.OpenVisualization -> emitEvent(VehicleMenuEvent.OpenVisualization)
+            VehicleMenuUiAction.OpenReports -> emitEvent(VehicleMenuEvent.OpenReports)
             VehicleMenuUiAction.SignOutTapped -> _uiState.update { it.copy(showSignOutDialog = true) }
             VehicleMenuUiAction.SignOutDismissed -> _uiState.update { it.copy(showSignOutDialog = false) }
             VehicleMenuUiAction.SignOutConfirmed -> signOut()

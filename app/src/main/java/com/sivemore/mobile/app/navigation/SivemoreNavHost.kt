@@ -24,6 +24,7 @@ import com.sivemore.mobile.feature.sessionactions.SessionActionsRoute
 import com.sivemore.mobile.feature.vehiclemenu.VehicleMenuRoute
 import com.sivemore.mobile.feature.vehiclelookup.VehicleLookupRoute
 import com.sivemore.mobile.feature.vehicleregistration.VehicleRegistrationRoute
+import com.sivemore.mobile.feature.reports.ReportsRoute
 import com.sivemore.mobile.feature.verification.VerificationRoute
 
 @Composable
@@ -57,6 +58,27 @@ fun SivemoreNavHost(
                     navController.navigate(AppDestination.VehicleRegistration.createRoute()) {
                         launchSingleTop = true
                     }
+                },
+                onOpenReports = {
+                    navController.navigate(AppDestination.Reports.route) {
+                        launchSingleTop = true
+                    }
+                },
+                onSignedOut = {
+                    navController.navigate(AppDestination.Auth.route) {
+                        popUpTo(navController.graph.id) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
+            )
+        }
+        composable(AppDestination.Reports.route) {
+            ReportsRoute(
+                onNavigateBack = {
+                    navController.popBackStack(
+                        route = AppDestination.VehicleMenu.route,
+                        inclusive = false,
+                    )
                 },
                 onSignedOut = {
                     navController.navigate(AppDestination.Auth.route) {

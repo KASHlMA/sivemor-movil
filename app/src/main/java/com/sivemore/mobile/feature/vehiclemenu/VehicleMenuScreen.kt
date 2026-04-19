@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.collectLatest
 fun VehicleMenuRoute(
     onOpenVehicleVisualization: () -> Unit,
     onOpenVehicleRegistration: () -> Unit,
+    onOpenReports: () -> Unit,
     onSignedOut: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: VehicleMenuViewModel = hiltViewModel(),
@@ -49,6 +50,7 @@ fun VehicleMenuRoute(
             when (event) {
                 VehicleMenuEvent.OpenRegistration -> onOpenVehicleRegistration()
                 VehicleMenuEvent.OpenVisualization -> onOpenVehicleVisualization()
+                VehicleMenuEvent.OpenReports -> onOpenReports()
                 VehicleMenuEvent.SignedOut -> onSignedOut()
             }
         }
@@ -120,6 +122,15 @@ fun VehicleMenuScreen(
                         .testTag("vehicle_menu_registration"),
                     enabled = !state.isSigningOut,
                     onClick = { onAction(VehicleMenuUiAction.OpenRegistration) },
+                )
+                SivemorePrimaryButton(
+                    text = stringResource(R.string.vehicle_menu_reports),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(58.dp)
+                        .testTag("vehicle_menu_reports"),
+                    enabled = !state.isSigningOut,
+                    onClick = { onAction(VehicleMenuUiAction.OpenReports) },
                 )
             }
         }

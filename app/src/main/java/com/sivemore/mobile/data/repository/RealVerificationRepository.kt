@@ -9,6 +9,7 @@ import com.sivemore.mobile.data.network.QuestionUpdateDto
 import com.sivemore.mobile.data.network.SectionUpdateDto
 import com.sivemore.mobile.data.network.UpdateInspectionRequestDto
 import com.sivemore.mobile.data.network.toDomain
+import com.sivemore.mobile.domain.model.CompletedReport
 import com.sivemore.mobile.domain.model.EvidenceUpload
 import com.sivemore.mobile.domain.model.InspectionFlowAnswerDraft
 import com.sivemore.mobile.domain.model.VerificationSession
@@ -181,6 +182,9 @@ class RealVerificationRepository @Inject constructor(
         val inspectionId = draftResolver.resolveInspectionId(orderUnitId)
         mobileApiService.submitInspection(inspectionId)
     }
+
+    override suspend fun loadCompletedReports(): List<CompletedReport> =
+        mobileApiService.listCompletedInspections().map { it.toDomain() }
 
     override suspend fun abandonSession(orderUnitId: String) {
         registrationStore.loadSession(orderUnitId)?.let {

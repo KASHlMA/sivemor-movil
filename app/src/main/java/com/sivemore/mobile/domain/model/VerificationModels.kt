@@ -2,8 +2,8 @@ package com.sivemore.mobile.domain.model
 
 enum class VehicleStatus(val label: String) {
     Assigned("Aceptado"),
-    InProgress("Reprobado"),
-    Paused("Reprobado"),
+    InProgress("En Inspección"),
+    Paused("Pausado"),
 }
 
 enum class VerificationSessionStatus {
@@ -93,4 +93,20 @@ data class EvidenceUpload(
     val uri: String,
     val fileName: String?,
     val mimeType: String?,
+)
+
+enum class ReportVerdict(val label: String) {
+    Approved("Aprobado"),
+    Rejected("Reprobado"),
+    Pending("Pendiente"),
+}
+
+data class CompletedReport(
+    val id: String,
+    val orderNumber: String,
+    val vehiclePlate: String,
+    val clientCompanyName: String,
+    val submittedAtLabel: String,
+    val verdict: ReportVerdict,
+    val comments: String,
 )
