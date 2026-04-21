@@ -71,4 +71,7 @@ interface MobileApiService {
 
     @GET("mobile/inspections/history")
     suspend fun listCompletedInspections(): List<InspectionHistoryDto>
+
+    @POST("mobile/evaluacion")
+    suspend fun submitEvaluacion(@Body request: MobileEvaluacionRequestDto)
 }

@@ -5,6 +5,7 @@ import com.sivemore.mobile.data.network.InspectionDraftResolver
 import com.sivemore.mobile.data.network.MediaUploadResolver
 import com.sivemore.mobile.data.network.MobileApiService
 import com.sivemore.mobile.data.network.ChecklistQuestionDto
+import com.sivemore.mobile.data.network.MobileEvaluacionRequestDto
 import com.sivemore.mobile.data.network.QuestionUpdateDto
 import com.sivemore.mobile.data.network.SectionUpdateDto
 import com.sivemore.mobile.data.network.UpdateInspectionRequestDto
@@ -185,6 +186,10 @@ class RealVerificationRepository @Inject constructor(
 
     override suspend fun loadCompletedReports(): List<CompletedReport> =
         mobileApiService.listCompletedInspections().map { it.toDomain() }
+
+    override suspend fun submitEvaluacion(request: MobileEvaluacionRequestDto) {
+        mobileApiService.submitEvaluacion(request)
+    }
 
     override suspend fun abandonSession(orderUnitId: String) {
         registrationStore.loadSession(orderUnitId)?.let {

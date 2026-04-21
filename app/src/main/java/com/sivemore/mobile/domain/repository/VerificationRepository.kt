@@ -1,5 +1,6 @@
 package com.sivemore.mobile.domain.repository
 
+import com.sivemore.mobile.data.network.MobileEvaluacionRequestDto
 import com.sivemore.mobile.domain.model.CompletedReport
 import com.sivemore.mobile.domain.model.EvidenceUpload
 import com.sivemore.mobile.domain.model.InspectionFlowAnswerDraft
@@ -51,6 +52,7 @@ interface VerificationRepository {
 
     suspend fun pauseSession(orderUnitId: String)
     suspend fun completeSession(orderUnitId: String)
+    suspend fun submitEvaluacion(request: MobileEvaluacionRequestDto)
     suspend fun abandonSession(orderUnitId: String)
     suspend fun loadCompletedReports(): List<CompletedReport>
 }

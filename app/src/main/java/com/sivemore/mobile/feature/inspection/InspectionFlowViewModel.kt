@@ -3,6 +3,7 @@ package com.sivemore.mobile.feature.inspection
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sivemore.mobile.data.network.MobileEvaluacionRequestDto
 import com.sivemore.mobile.domain.model.EvidenceUpload
 import com.sivemore.mobile.domain.model.InspectionFlowAnswerDraft
 import com.sivemore.mobile.domain.model.InspectionSection
@@ -347,6 +348,10 @@ class InspectionFlowViewModel @Inject constructor(
                     answers = state.toInspectionFlowAnswers(),
                 )
                 verificationRepository.completeSession(vehicleId)
+                val inspectionId = state.session?.id?.toLongOrNull()
+                if (inspectionId != null) {
+                    verificationRepository.submitEvaluacion(state.toEvaluacionRequest(inspectionId))
+                }
             }.onSuccess {
                 _uiState.update { it.copy(isSavingComment = false) }
                 _events.emit(InspectionFlowEvent.Completed)
@@ -424,6 +429,110 @@ private fun applyPreviewUriToNewEvidence(
             item
         }
     }
+}
+
+private fun InspectionFlowUiState.toEvaluacionRequest(inspectionId: Long): MobileEvaluacionRequestDto {
+    fun q(sectionId: String, questionId: String): String? = when (sectionId) {
+        "luces" -> lucesSection
+        "llantas" -> llantasSection
+        "direccion" -> direccionSection
+        "aire_frenos" -> aireFrenosSection
+        "motor_emisiones" -> motorEmisionesSection
+        "otros" -> otrosSection
+        else -> null
+    }?.allQuestions?.firstOrNull { it.id == questionId }?.selectedOptionId
+
+    fun n(sectionId: String, questionId: String): Double? = when (sectionId) {
+        "llantas" -> llantasSection
+        "direccion" -> direccionSection
+        "aire_frenos" -> aireFrenosSection
+        else -> null
+    }?.allQuestions?.firstOrNull { it.id == questionId }?.numericValue?.toDoubleOrNull()
+
+    fun ni(sectionId: String, questionId: String): Int? = when (sectionId) {
+        "llantas" -> llantasSection
+        "direccion" -> direccionSection
+        else -> null
+    }?.allQuestions?.firstOrNull { it.id == questionId }?.numericValue?.toIntOrNull()
+
+    fun birlosSelected(groupId: String): String? = llantasSection.groups
+        .firstOrNull { it.id == groupId }?.birlosVisualState?.birlosState
+        ?.mapIndexed { i, v -> if (v) i.toString() else null }
+        ?.filterNotNull()?.joinToString(",")
+
+    fun birlosCount(groupId: String): Int? = llantasSection.groups
+        .firstOrNull { it.id == groupId }?.birlosVisualState?.count
+
+    return MobileEvaluacionRequestDto(
+        inspectionId = inspectionId,
+        lucesGalibo = q("luces", "luces_galibo"),
+        lucesAltas = q("luces", "luces_altas"),
+        lucesBajas = q("luces", "luces_bajas"),
+        lucesDemarcadorasDelanteras = q("luces", "luces_demarcadoras_delanteras"),
+        lucesDemarcadorasTraseras = q("luces", "luces_demarcadoras_traseras"),
+        lucesIndicadoras = q("luces", "luces_indicadoras"),
+        faroIzquierdo = q("luces", "faro_izquierdo"),
+        faroDerecho = q("luces", "faro_derecho"),
+        lucesDireccionalesDelanteras = q("luces", "luces_direccionales_delanteras"),
+        lucesDireccionalesTraseras = q("luces", "luces_direccionales_traseras"),
+        llantasRinesDelanteros = q("llantas", "llantas_rines_delanteros"),
+        llantasRinesTraseros = q("llantas", "llantas_rines_traseros"),
+        llantasMasasDelanteras = q("llantas", "llantas_masas_delanteras"),
+        llantasMasasTraseras = q("llantas", "llantas_masas_traseras"),
+        llantasPresionDelanteraIzquierda = n("llantas", "llantas_presion_delantera_izquierda"),
+        llantasPresionDelanteraDerecha = n("llantas", "llantas_presion_delantera_derecha"),
+        llantasPresionTraseraIzquierda1 = n("llantas", "llantas_presion_trasera_izquierda_1"),
+        llantasPresionTraseraIzquierda2 = n("llantas", "llantas_presion_trasera_izquierda_2"),
+        llantasPresionTraseraDerecha1 = n("llantas", "llantas_presion_trasera_derecha_1"),
+        llantasPresionTraseraDerecha2 = n("llantas", "llantas_presion_trasera_derecha_2"),
+        llantasProfundidadDelanteraIzquierda = n("llantas", "llantas_profundidad_delantera_izquierda"),
+        llantasProfundidadDelanteraDerecha = n("llantas", "llantas_profundidad_delantera_derecha"),
+        llantasProfundidadTraseraIzquierda1 = n("llantas", "llantas_profundidad_trasera_izquierda_1"),
+        llantasProfundidadTraseraIzquierda2 = n("llantas", "llantas_profundidad_trasera_izquierda_2"),
+        llantasProfundidadTraseraDerecha1 = n("llantas", "llantas_profundidad_trasera_derecha_1"),
+        llantasProfundidadTraseraDerecha2 = n("llantas", "llantas_profundidad_trasera_derecha_2"),
+        llantasTuercasDelanteraIzquierda = q("llantas", "llantas_tuercas_delantera_izquierda"),
+        llantasTuercasDelanteraIzquierdaFaltantes = ni("llantas", "llantas_tuercas_faltantes_delantera_izquierda"),
+        llantasTuercasDelanteraIzquierdaRotas = ni("llantas", "llantas_tuercas_rotas_delantera_izquierda"),
+        llantasTuercasDelanteraDerecha = q("llantas", "llantas_tuercas_delantera_derecha"),
+        llantasTuercasDelanteraDerechaFaltantes = ni("llantas", "llantas_tuercas_faltantes_delantera_derecha"),
+        llantasTuercasDelanteraDerechaRotas = ni("llantas", "llantas_tuercas_rotas_delantera_derecha"),
+        llantasTuercasTraseraIzquierda = q("llantas", "llantas_tuercas_trasera_izquierda"),
+        llantasTuercasTraseraIzquierdaFaltantes = ni("llantas", "llantas_tuercas_faltantes_trasera_izquierda"),
+        llantasTuercasTraseraIzquierdaRotas = ni("llantas", "llantas_tuercas_rotas_trasera_izquierda"),
+        llantasTuercasTraseraDerecha = q("llantas", "llantas_tuercas_trasera_derecha"),
+        llantasTuercasTraseraDerechaFaltantes = ni("llantas", "llantas_tuercas_faltantes_trasera_derecha"),
+        llantasTuercasTraseraDerechaRotas = ni("llantas", "llantas_tuercas_rotas_trasera_derecha"),
+        llantasBirlosDelanteraIzquierdaCount = birlosCount("llantas_birlos_delantera_izquierda"),
+        llantasBirlosDelanteraIzquierdaSelected = birlosSelected("llantas_birlos_delantera_izquierda"),
+        llantasBirlosDelanteraDerechaCount = birlosCount("llantas_birlos_delantera_derecha"),
+        llantasBirlosDelanteraDerechaSelected = birlosSelected("llantas_birlos_delantera_derecha"),
+        llantasBirlosTraseraIzquierdaCount = birlosCount("llantas_birlos_trasera_izquierda"),
+        llantasBirlosTraseraIzquierdaSelected = birlosSelected("llantas_birlos_trasera_izquierda"),
+        llantasBirlosTraseraDerechaCount = birlosCount("llantas_birlos_trasera_derecha"),
+        llantasBirlosTraseraDerechaSelected = birlosSelected("llantas_birlos_trasera_derecha"),
+        llantasBirlosMediaIzquierdaCount = birlosCount("llantas_birlos_media_izquierda"),
+        llantasBirlosMediaIzquierdaSelected = birlosSelected("llantas_birlos_media_izquierda"),
+        llantasBirlosMediaDerechaCount = birlosCount("llantas_birlos_media_derecha"),
+        llantasBirlosMediaDerechaSelected = birlosSelected("llantas_birlos_media_derecha"),
+        direccionBrazoPitman = q("direccion", "direccion_brazo_pitman"),
+        direccionManijasPuertas = q("direccion", "direccion_manijas_puertas"),
+        direccionChavetas = q("direccion", "direccion_chavetas"),
+        direccionChavetasFaltantes = ni("direccion", "direccion_chavetas_faltantes"),
+        aireFrenosCompresor = q("aire_frenos", "aire_frenos_compresor"),
+        aireFrenosTanquesAire = q("aire_frenos", "aire_frenos_tanques_aire"),
+        aireFrenosTiempoCargaPsi = n("aire_frenos", "aire_frenos_tiempo_carga_psi"),
+        aireFrenosTiempoCargaTiempo = n("aire_frenos", "aire_frenos_tiempo_carga_tiempo"),
+        motorEmisionesHumo = q("motor_emisiones", "motor_emisiones_humo"),
+        motorEmisionesGobernado = q("motor_emisiones", "motor_emisiones_gobernado"),
+        otrosCajaDireccion = q("otros", "otros_caja_direccion"),
+        otrosDepositoAceite = q("otros", "otros_deposito_aceite"),
+        otrosParabrisas = q("otros", "otros_parabrisas"),
+        otrosLimpiaparabrisas = q("otros", "otros_limpiaparabrisas"),
+        otrosJuego = q("otros", "otros_juego"),
+        otrosEscape = q("otros", "otros_escape"),
+        comentariosGenerales = commentDraft.ifBlank { null },
+    )
 }
 
 private fun InspectionFlowUiState.toInspectionFlowAnswers(): List<InspectionFlowAnswerDraft> = buildList {
