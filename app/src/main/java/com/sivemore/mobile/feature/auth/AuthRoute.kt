@@ -86,14 +86,15 @@ fun AuthScreen(
         modifier = modifier
             .fillMaxSize()
             .background(Surface)
-            .imePadding()
             .testTag("auth_screen"),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 36.dp, vertical = 48.dp),
+                .imePadding()
+                .padding(horizontal = 36.dp, vertical = 48.dp)
+                .padding(bottom = 120.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(spacing.lg),
         ) {
